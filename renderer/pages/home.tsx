@@ -1,21 +1,17 @@
 import React from "react"
 import Head from "next/head"
-import Link from "next/link"
 import { Layout, Typography } from "antd"
 import RightOverview from "../components/RightOverview"
 import ActionBar from "../components/ActionBar"
-import { useBaseStore } from "../lib/store"
 import dynamic from "next/dynamic"
 
-const { Header, Content } = Layout
+const { Content } = Layout
 
 export default function HomePage() {
-  const { fileUrl, hasImage } = useBaseStore(state => state)
-
-  const DrawImage = dynamic(() => import('../components/DrawImage'), {
+  const DrawImage = dynamic(() => import("../components/DrawImage"), {
     ssr: false,
-  });
-  
+  })
+
   return (
     <React.Fragment>
       <Head>
@@ -30,7 +26,7 @@ export default function HomePage() {
           <div className="flex flex-col md:flex-row md:space-x-4">
             <div className="md:w-3/4">
               <ActionBar />
-              <DrawImage width={960} hasImage={hasImage} fileUrl={fileUrl} />
+              <DrawImage />
             </div>
             <div className="md:w-1/4">
               <RightOverview />

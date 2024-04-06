@@ -47,17 +47,9 @@ const FOLDER_NAME = "images_data"
 
 const isImageFile = (fileName: string) => {
   const lowerCaseFileName = fileName.toLowerCase()
-  return [
-    ".dcm",
-    ".dicom",
-    ".jpg",
-    ".jpeg",
-    ".png",
-    ".bmp",
-    ".webp",
-    ".tif",
-    ".tiff",
-  ].some(ext => lowerCaseFileName.endsWith(ext))
+  return [".jpg", ".jpeg", ".png", ".bmp", ".webp", ".tif", ".tiff"].some(ext =>
+    lowerCaseFileName.endsWith(ext)
+  )
 }
 
 const isDicomFile = (fileName: string) => {
@@ -100,7 +92,7 @@ ipcMain.on(
   "save-json",
   (event, values: { data: any[]; fileName: string; path: string }) => {
     const { data, fileName, path: realPath } = values
-    const userDataPath = app.getAppPath()
+    const userDataPath = isProd ? app.getPath("exe") : app.getAppPath()
     const folderPath = path.join(userDataPath, FOLDER_NAME)
     const filePath = path.join(
       folderPath,

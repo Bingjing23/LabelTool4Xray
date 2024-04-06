@@ -1,5 +1,5 @@
 import { Empty, Form, Modal } from "antd"
-import React, { Fragment, useState } from "react"
+import React, { Fragment, useEffect, useState } from "react"
 import { v4 as uuidv4 } from "uuid"
 import { Stage, Layer, Image, Rect } from "react-konva"
 import useImage from "use-image"
@@ -12,28 +12,34 @@ import {
   useTableStore,
 } from "../../lib/store"
 
-type IProps = {
-  width: number
-  hasImage?: boolean
-  fileUrl?: string
-}
-
 const isDicomFile = (fileName: string) => {
   const lowerCaseFileName = fileName.toLowerCase()
   return [".dcm", ".dicom"].some(ext => lowerCaseFileName.endsWith(ext))
 }
 
-const DrawImage: React.FC<IProps> = (props: IProps) => {
-  const { width = 800, hasImage, fileUrl } = props
+const DrawImage = () => {
+  const { selectMethod, hasImage, fileUrl } = useBaseStore(state => state)
+  const [size, setSize] = useState<{ width: number; height: number }>({
+    width: 960,
+    height: 720,
+  })
   const [image] = useImage(`atom://${fileUrl}`, "anonymous")
   const [dicomImage, setDicomImage] = useState<HTMLImageElement>(null)
   const [form] = Form.useForm()
+
+  useEffect(() => {
+    if (!image) return
+    const imageWidth = image.width,
+      imageHeight = image.height
+    const scale = imageWidth / imageHeight
+    if (imageWidth > imageHeight) setSize({ width: 960, height: 960 / scale })
+    else setSize({ width: 720 * scale, height: 720 })
+  }, [image])
 
   const { rects: rectangles, setRects: setRectangles } = useRectsStore(
     state => state
   )
   const { polygons, setPolygons } = usePolygonStore(state => state)
-  const { selectMethod } = useBaseStore(state => state)
   const { addTableDataSource } = useTableStore(state => state)
 
   const { modal, methods } = useSelectMethodFuncs()
@@ -62,15 +68,16 @@ const DrawImage: React.FC<IProps> = (props: IProps) => {
     <>
       {hasImage && fileUrl ? (
         <Stage
-          width={width}
-          height={width * 0.75}
+          className="flex justify-center"
+          width={size.width}
+          height={size.height}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
         >
           <Layer>
             <Image
-              width={width}
-              height={width * 0.75}
+              width={size.width}
+              height={size.height}
               image={image || dicomImage}
             />
             {Object.entries(methods).map(([key, value]) => (
@@ -80,7 +87,7 @@ const DrawImage: React.FC<IProps> = (props: IProps) => {
         </Stage>
       ) : (
         <div
-          style={{ width: width, height: width * 0.75 }}
+          style={{ width: size.width, height: size.height }}
           className="flex justify-center items-center"
         >
           <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
