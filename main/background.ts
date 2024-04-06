@@ -3,7 +3,6 @@ import fs from "fs"
 import { app, dialog, ipcMain, net, protocol } from "electron"
 import serve from "electron-serve"
 import { createWindow } from "./helpers"
-import { createImages } from "./helpers/convertDicom"
 
 const isProd = process.env.NODE_ENV === "production"
 
@@ -80,9 +79,6 @@ ipcMain.on("open-directory-dialog", event => {
             event.reply("selected-directory", [])
             return
           }
-          files.forEach(fileName => {
-            // createImages(directoryPath, fileName, directoryPath)
-          })
           const filteredFiles = files
             .filter(file => {
               return (

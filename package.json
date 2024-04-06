@@ -22,8 +22,6 @@
     "@types/uuid": "^9.0.8",
     "antd": "^5.15.3",
     "autoprefixer": "^10.4.19",
-    "canvas": "^2.11.2",
-    "dicom-parser": "^1.8.21",
     "electron": "28.2.10",
     "electron-builder": "^24.9.1",
     "konva": "^9.3.6",

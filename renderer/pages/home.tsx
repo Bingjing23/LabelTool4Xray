@@ -2,15 +2,20 @@ import React from "react"
 import Head from "next/head"
 import Link from "next/link"
 import { Layout, Typography } from "antd"
-import DrawImage from "../components/DrawImage"
 import RightOverview from "../components/RightOverview"
 import ActionBar from "../components/ActionBar"
 import { useBaseStore } from "../lib/store"
+import dynamic from "next/dynamic"
 
 const { Header, Content } = Layout
 
 export default function HomePage() {
   const { fileUrl, hasImage } = useBaseStore(state => state)
+
+  const DrawImage = dynamic(() => import('../components/DrawImage'), {
+    ssr: false,
+  });
+  
   return (
     <React.Fragment>
       <Head>
