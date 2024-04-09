@@ -104,7 +104,6 @@ ipcMain.on(
     }
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2))
 
-    console.log("🦄 ~ filePath:", filePath)
     event.reply("saved-json", "success")
   }
 )
@@ -116,9 +115,9 @@ ipcMain.on("read-json", (event, fileName: string) => {
     folderPath,
     path.basename(fileName, path.extname(fileName)) + ".json"
   )
-  console.log("🦄 ~ ipcMain.on ~ filePath:", filePath)
   try {
     const data = fs.readFileSync(filePath, "utf8")
+    console.log("🦄 ~ ipcMain.on ~ data:", data)
     event.reply("readed-json", JSON.parse(data), "success")
   } catch (err) {
     event.reply("readed-json", [], "error")

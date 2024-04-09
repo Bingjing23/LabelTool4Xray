@@ -1,20 +1,38 @@
 import { Form, Badge, Select, Input } from "antd"
+import { create } from "zustand"
+import { xtermColors } from "./colors"
 import { FormProps } from "antd/es/form/Form"
+import { ReactNode } from "react"
+
+type OptionsState = {
+  labelOptions: { label: ReactNode; value: string; color: string }[]
+  setLabelOptions: (
+    labelOptions: { label: ReactNode; value: string; color: string }[]
+  ) => void
+}
 
 export const labelOptions = [
   {
-    label: <Badge key="red" color="red" text="red" />,
-    value: "red",
+    label: <Badge key="label 1" color={xtermColors[0]} text="label 1" />,
+    value: "label 1",
+    color: xtermColors[0],
   },
   {
-    label: <Badge key="green" color="green" text="green" />,
-    value: "green",
+    label: <Badge key="label 2" color={xtermColors[1]} text="label 2" />,
+    value: "label 2",
+    color: xtermColors[1],
   },
   {
-    label: <Badge key="blue" color="blue" text="blue" />,
-    value: "blue",
+    label: <Badge key="label 3" color={xtermColors[2]} text="label 3" />,
+    value: "label 3",
+    color: xtermColors[2],
   },
 ]
+
+export const useOptionsStore = create<OptionsState>()(set => ({
+  labelOptions: labelOptions,
+  setLabelOptions: labelOptions => set({ labelOptions }),
+}))
 
 export const severityOptions = [
   {
@@ -43,6 +61,7 @@ export const locationOptions = [
 ]
 
 const InfoForm: React.FC<FormProps> = (props: FormProps) => {
+  const labelOptions = useOptionsStore(state => state.labelOptions)
   return (
     <Form layout="vertical" {...props}>
       <Form.Item
@@ -52,8 +71,8 @@ const InfoForm: React.FC<FormProps> = (props: FormProps) => {
       >
         <Select options={labelOptions} />
       </Form.Item>
-      <Form.Item name="abnormalityName" label="Abnormality Name">
-        <Input placeholder="Abnormality Name" />
+      <Form.Item name="newAbnormalityName" label="New Abnormality Name">
+        <Input placeholder="New Abnormality Name" />
       </Form.Item>
       <Form.Item
         name="severity"

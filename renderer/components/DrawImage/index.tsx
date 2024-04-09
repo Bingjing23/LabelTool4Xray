@@ -1,9 +1,9 @@
-import { Empty, Form, Modal } from "antd"
+import { Badge, Empty, Form, Modal } from "antd"
 import React, { Fragment, useEffect, useState } from "react"
 import { v4 as uuidv4 } from "uuid"
 import { Stage, Layer, Image, Rect } from "react-konva"
 import useImage from "use-image"
-import InfoForm from "../InfoForm"
+import InfoForm, { useOptionsStore } from "../InfoForm"
 import useSelectMethodFuncs from "./useSelectMethodFuncs"
 import {
   useBaseStore,
@@ -11,6 +11,7 @@ import {
   useRectsStore,
   useTableStore,
 } from "../../lib/store"
+import { xtermColors } from "../InfoForm/colors"
 
 const isDicomFile = (fileName: string) => {
   const lowerCaseFileName = fileName.toLowerCase()
@@ -50,6 +51,8 @@ const DrawImage = () => {
   const handleMouseDown = methods[selectMethod].handleMouseDown
   const handleMouseMove = methods[selectMethod].handleMouseMove
 
+  const { labelOptions, setLabelOptions } = useOptionsStore(state => state)
+
   const handleSubmit = values => {
     console.log("Form Values:", values)
     console.log("currentPoints:", currentPoints, currentRect)
@@ -60,6 +63,21 @@ const DrawImage = () => {
       addTableDataSource({ ...values, polygon: currentPoints, rowId: uuidv4() })
       setCurrentPoints(null)
     }
+    const newAbnormalityName = values.newAbnormalityName
+    setLabelOptions([
+      ...labelOptions,
+      {
+        label: (
+          <Badge
+            key={newAbnormalityName}
+            color={xtermColors[labelOptions.length % xtermColors.length]}
+            text={newAbnormalityName}
+          />
+        ),
+        value: newAbnormalityName,
+        color: xtermColors[labelOptions.length % xtermColors.length],
+      },
+    ])
     setModalOpen(false)
     form.resetFields()
   }

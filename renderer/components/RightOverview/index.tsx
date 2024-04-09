@@ -1,12 +1,17 @@
 import { Badge, Button, Card, List, Space, Table } from "antd"
 import { ColumnType, ColumnsType } from "antd/es/table"
-import { labelOptions, severityOptions } from "../InfoForm"
+import { locationOptions, severityOptions, useOptionsStore } from "../InfoForm"
+import Image from "next/image"
+import LeftArrow from "../../public/svg/Left.svg"
+import RightArrow from "../../public/svg/Right.svg"
 import {
   useBaseStore,
   usePolygonStore,
   useRectsStore,
   useTableStore,
 } from "../../lib/store"
+
+const labelOptions = useOptionsStore.getState().labelOptions
 
 const labelColumns: ColumnsType = [
   {
@@ -28,8 +33,13 @@ const labelColumns: ColumnsType = [
     })),
     onFilter: (value, record: any) => record.customLabel === value,
     filterOnClose: true,
-    render: (text, record, index) => {
-      return <Badge color={text} text={text} />
+    render: text => {
+      return (
+        <Badge
+          color={labelOptions.find(item => item.value === text)?.color}
+          text={text}
+        />
+      )
     },
   },
   {
@@ -55,7 +65,7 @@ const labelColumns: ColumnsType = [
     dataIndex: "location",
     width: 50,
     ellipsis: true,
-    filters: labelOptions.map(label => ({
+    filters: locationOptions.map(label => ({
       text: label.label,
       value: label.value,
     })),
@@ -175,7 +185,91 @@ const RightOverview: React.FC = () => {
             }}
           />
         </Card>
-        <Card title="Files" className="[&_.ant-card-body]:p-2">
+        <Card
+          title={
+            <div className="flex justify-between items-center">
+              <span>Files</span>
+              <div className="flex gap-4">
+                <Image
+                  priority
+                  src={LeftArrow}
+                  style={{ cursor: "pointer" }}
+                  onClick={() => {
+                    const currentIndex = filesData.findIndex(
+                      item => item.path === fileUrl
+                    )
+                    const previousIndex = Math.max(currentIndex - 1, 0)
+                    const previousFile = filesData[previousIndex]
+
+                    setFileUrl(previousFile.path)
+                    setHasImage(true)
+                    window.ipc.on("readed-json", (data: any[], state) => {
+                      if (!data) {
+                        setTableDataSource([])
+                        setRects([])
+                        setPolygons([])
+                      } else {
+                        setTableDataSource(data)
+                        const rects =
+                          data
+                            ?.filter(item => item?.rect)
+                            ?.map(item => item.rect) || []
+
+                        const polygons =
+                          data
+                            ?.filter(item => item?.polygon)
+                            ?.map(item => item.polygon) || []
+
+                        setRects(rects)
+                        setPolygons(polygons)
+                      }
+                    })
+                    window.ipc.send("read-json", previousFile.fileName)
+                  }}
+                />
+                <Image
+                  priority
+                  src={RightArrow}
+                  style={{ cursor: "pointer" }}
+                  onClick={() => {
+                    const currentIndex = filesData.findIndex(
+                      item => item.path === fileUrl
+                    )
+                    const nextIndex = Math.min(
+                      currentIndex + 1,
+                      filesData.length - 1
+                    )
+                    const nextFile = filesData[nextIndex]
+
+                    setFileUrl(nextFile.path)
+                    setHasImage(true)
+                    window.ipc.on("readed-json", (data: any[], state) => {
+                      if (!data) {
+                        setTableDataSource([])
+                        setRects([])
+                        setPolygons([])
+                      } else {
+                        setTableDataSource(data)
+                        const rects =
+                          data
+                            ?.filter(item => item?.rect)
+                            ?.map(item => item.rect) || []
+                        const polygons =
+                          data
+                            ?.filter(item => item?.polygon)
+                            ?.map(item => item.polygon) || []
+                        setRects(rects)
+                        setPolygons(polygons)
+                      }
+                    })
+                    window.ipc.send("read-json", nextFile.fileName)
+                  }}
+                />
+              </div>
+            </div>
+          }
+          className="[&_.ant-card-body]:p-2"
+        >
           <Table
             className="[&_.ant-table-tbody>tr>td]:p-2 [&_.ant-table-thead>tr>th]:p-2 [&_.ant-table-measure-row]:collapse"
             rowKey="key"
@@ -190,27 +284,27 @@ const RightOverview: React.FC = () => {
                   setFileUrl(record.path)
                   setHasImage(true)
                   window.ipc.on("readed-json", (data: any[], state) => {
-                    console.log("🦄 ~ window.ipc.on ~ data:", data, state)
-                    setTableDataSource(data)
-                    const rects =
-                      data
-                        ?.filter(item => item?.rect)
-                        ?.map(item => item.rect) || []
+                    if (!data && record.path !== fileUrl) {
+                      setTableDataSource([])
+                      setRects([])
+                      setPolygons([])
+                    } else {
+                      setTableDataSource(data)
+                      const rects =
+                        data
+                          ?.filter(item => item?.rect)
+                          ?.map(item => item.rect) || []
 
-                    const polygons =
-                      data
-                        ?.filter(item => item?.polygon)
-                        ?.map(item => item.polygon) || []
+                      const polygons =
+                        data
+                          ?.filter(item => item?.polygon)
+                          ?.map(item => item.polygon) || []
 
-                    setRects(rects)
-                    setPolygons(polygons)
+                      setRects(rects)
+                      setPolygons(polygons)
+                    }
                   })
                   window.ipc.send("read-json", record.fileName)
-                  if (record.path !== fileUrl) {
-                    setTableDataSource([])
-                    setRects([])
-                    setPolygons([])
-                  }
                 },
               }
             }}

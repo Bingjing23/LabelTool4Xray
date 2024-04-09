@@ -53,7 +53,6 @@ const ActionBar = () => {
           type="link"
           className="mr-2"
           onClick={() => {
-            console.log("🦄 ~ rectsDataSource:", tableDataSource)
             saveJson(tableDataSource)
           }}
         >
@@ -63,24 +62,6 @@ const ActionBar = () => {
     },
   ]
 
-  const selectMethodItems: MenuProps["items"] = [
-    {
-      key: "Rectangle",
-      label: (
-        <Button type="link" onClick={() => setSelectMethod("rectangle")}>
-          Rectangle
-        </Button>
-      ),
-    },
-    {
-      key: "Polygon",
-      label: (
-        <Button type="link" onClick={() => setSelectMethod("polygon")}>
-          Polygon
-        </Button>
-      ),
-    },
-  ]
   return (
     <div className="mb-2">
       <Dropdown menu={{ items: fileActionItems }} trigger={["click"]}>
@@ -91,14 +72,12 @@ const ActionBar = () => {
           </div>
         </Button>
       </Dropdown>
-      <Dropdown menu={{ items: selectMethodItems }} trigger={["click"]}>
-        <Button type="text">
-          <div className="flex gap-2">
-            Select Method
-            <DownOutlined />
-          </div>
-        </Button>
-      </Dropdown>
+      <Button type="text" onClick={() => setSelectMethod("rectangle")}>
+        Rectangle
+      </Button>
+      <Button type="text" onClick={() => setSelectMethod("polygon")}>
+        Polygon
+      </Button>
     </div>
   )
 }
