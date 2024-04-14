@@ -62,40 +62,36 @@ const DrawImage = () => {
   const firstRender = useRef(true)
 
   useEffect(() => {
-    if (!modalOpen) return
+    if (!firstRender.current) return
     window.ipc.on("readed-label-json", (data: any[], state) => {
-      if (firstRender.current) {
-        setOriginalnewAbnormalityLabelOptions([
-          ...originalnewAbnormalityLabelOptions,
-          ...data,
-        ])
-        setLabelOptions([
-          ...labelOptions,
-          ...data?.map((item, index) => ({
-            label: (
-              <Badge
-                key={item}
-                color={
-                  xtermColors[
-                    (labelOptions.length + index) % xtermColors.length
-                  ]
-                }
-                text={item}
-              />
-            ),
-            value: item,
-            color:
-              xtermColors[(labelOptions.length + index) % xtermColors.length],
-          })),
-        ])
-        firstRender.current = false
-      }
+      setOriginalnewAbnormalityLabelOptions([
+        ...originalnewAbnormalityLabelOptions,
+        ...data,
+      ])
+      setLabelOptions([
+        ...labelOptions,
+        ...data?.map((item, index) => ({
+          label: (
+            <Badge
+              key={item}
+              color={
+                xtermColors[(labelOptions.length + index) % xtermColors.length]
+              }
+              text={item}
+            />
+          ),
+          value: item,
+          color:
+            xtermColors[(labelOptions.length + index) % xtermColors.length],
+        })),
+      ])
+      firstRender.current = false
     })
     window.ipc.send("read-json", {
       fileName: "newAbnormalityNames",
       folderName: "labels_data",
     })
-  }, [modalOpen])
+  }, [])
 
   const handleSubmit = values => {
     console.log("Form Values:", values)
@@ -157,7 +153,11 @@ const DrawImage = () => {
       {hasImage && fileUrl ? (
         <Stage
           className="flex justify-center"
-          style={{filter: `brightness(${imageBrightness / 100}) contrast(${imageContrast / 100})`}}
+          style={{
+            filter: `brightness(${imageBrightness / 100}) contrast(${
+              imageContrast / 100
+            })`,
+          }}
           width={size.width}
           height={size.height}
           onMouseDown={handleMouseDown}

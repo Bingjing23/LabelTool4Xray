@@ -97,9 +97,7 @@ ipcMain.on(
   "save-image-json",
   (event, values: { data: any[]; fileName: string; path: string }) => {
     const { data, fileName, path: realPath } = values
-    const userDataPath = isProd
-      ? path.dirname(app.getPath("userData"))
-      : app.getAppPath()
+    const userDataPath = isProd ? app.getPath("userData") : app.getAppPath()
     const folderPath = path.join(userDataPath, IMAGE_FOLDER_NAME)
     const filePath = path.join(
       folderPath,
@@ -119,9 +117,7 @@ ipcMain.on(
   "save-label-json",
   (event, values: { data: any[]; fileName: string; path: string }) => {
     const { data, fileName, path: realPath } = values
-    const userDataPath = isProd
-      ? path.dirname(app.getPath("userData"))
-      : app.getAppPath()
+    const userDataPath = isProd ? app.getPath("userData") : app.getAppPath()
     const folderPath = path.join(userDataPath, LABEL_FOLDER_NAME)
     const filePath = path.join(
       folderPath,
@@ -144,9 +140,7 @@ ipcMain.on(
     params: { fileName: string; folderName: "images_data" | "labels_data" }
   ) => {
     const { fileName, folderName } = params
-    const userDataPath = isProd
-      ? path.dirname(app.getPath("userData"))
-      : app.getAppPath()
+    const userDataPath = isProd ? app.getPath("userData") : app.getAppPath()
     const folderPath = path.join(userDataPath, folderName)
     const filePath = path.join(
       folderPath,
