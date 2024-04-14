@@ -20,6 +20,11 @@ export const useBaseStore = create<BaseState>(set => ({
   selectMethod: "rectangle",
   setSelectMethod: (selectMethod: "rectangle" | "polygon") =>
     set({ selectMethod }),
+    
+  imageBrightness: 100,
+  setImageBrightness: (imageBrightness: number) => set({ imageBrightness }),
+  imageContrast: 100,
+  setImageContrast: (imageContrast: number) => set({ imageContrast }),
 }))
 
 export const useRectsStore = create<RectState>(set => ({

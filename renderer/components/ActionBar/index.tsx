@@ -1,11 +1,17 @@
-import { Button, Dropdown, MenuProps } from "antd"
+import { Button, Dropdown, MenuProps, Slider } from "antd"
 import { DownOutlined } from "@ant-design/icons"
 import { useBaseStore, useTableStore } from "../../lib/store"
 
 const ActionBar = () => {
-  const { fileUrl, setFilesData, setSelectMethod } = useBaseStore(
-    state => state
-  )
+  const {
+    fileUrl,
+    setFilesData,
+    setSelectMethod,
+    imageBrightness,
+    setImageBrightness,
+    imageContrast,
+    setImageContrast,
+  } = useBaseStore(state => state)
   const { tableDataSource } = useTableStore(state => state)
 
   const getFileNameFromPath = (path: string) => {
@@ -63,7 +69,7 @@ const ActionBar = () => {
   ]
 
   return (
-    <div className="mb-2">
+    <div className="mb-2 flex">
       <Dropdown menu={{ items: fileActionItems }} trigger={["click"]}>
         <Button type="text">
           <div className="flex gap-2">
@@ -77,6 +83,41 @@ const ActionBar = () => {
       </Button>
       <Button type="text" onClick={() => setSelectMethod("polygon")}>
         Polygon
+      </Button>
+      <div className="ml-4 flex gap-2 items-center">
+        <span className="text-xs">Brightness: {imageBrightness}</span>
+        <Slider
+          className="w-[108px]"
+          defaultValue={100}
+          min={0}
+          max={200}
+          value={imageBrightness}
+          onChange={(value: number) => {
+            setImageBrightness(value)
+          }}
+        />
+      </div>
+      <div className="ml-2 flex gap-2 items-center">
+        <span className="text-xs">Contrast: {imageContrast}</span>
+        <Slider
+          className="w-[108px]"
+          defaultValue={100}
+          min={0}
+          max={200}
+          value={imageContrast}
+          onChange={(value: number) => {
+            setImageContrast(value)
+          }}
+        />
+      </div>
+      <Button
+        type="text"
+        onClick={() => {
+          setImageBrightness(100)
+          setImageContrast(100)
+        }}
+      >
+        Reset
       </Button>
     </div>
   )

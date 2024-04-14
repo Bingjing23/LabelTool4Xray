@@ -30,6 +30,11 @@ export type BaseState = {
 
   selectMethod: "rectangle" | "polygon"
   setSelectMethod: (selectMethod: "rectangle" | "polygon") => void
+
+  imageBrightness: number
+  setImageBrightness: (imageBrightness: number) => void
+  imageContrast: number
+  setImageContrast: (imageContrast: number) => void
 }
 
 export type RectState = {

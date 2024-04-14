@@ -19,7 +19,8 @@ const isDicomFile = (fileName: string) => {
 }
 
 const DrawImage = () => {
-  const { selectMethod, hasImage, fileUrl } = useBaseStore(state => state)
+  const { selectMethod, hasImage, fileUrl, imageBrightness, imageContrast } =
+    useBaseStore(state => state)
   const [size, setSize] = useState<{ width: number; height: number }>({
     width: 960,
     height: 720,
@@ -156,6 +157,7 @@ const DrawImage = () => {
       {hasImage && fileUrl ? (
         <Stage
           className="flex justify-center"
+          style={{filter: `brightness(${imageBrightness / 100}) contrast(${imageContrast / 100})`}}
           width={size.width}
           height={size.height}
           onMouseDown={handleMouseDown}
@@ -183,6 +185,7 @@ const DrawImage = () => {
       <Modal
         title="Additional Information"
         open={modalOpen}
+        maskClosable={false}
         onOk={() => form.submit()}
         onCancel={() => {
           setModalOpen(false)
