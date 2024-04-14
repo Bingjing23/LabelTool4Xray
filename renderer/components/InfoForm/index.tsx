@@ -2,13 +2,15 @@ import { Form, Badge, Select, Input } from "antd"
 import { create } from "zustand"
 import { xtermColors } from "./colors"
 import { FormProps } from "antd/es/form/Form"
-import { ReactNode } from "react"
+import { ReactNode, useEffect, useState } from "react"
 
 type OptionsState = {
   labelOptions: { label: ReactNode; value: string; color: string }[]
   setLabelOptions: (
     labelOptions: { label: ReactNode; value: string; color: string }[]
   ) => void
+  originalnewAbnormalityLabelOptions: string[]
+  setOriginalnewAbnormalityLabelOptions: (originalOptions: string[]) => void
 }
 
 export const labelOptions = [
@@ -32,6 +34,9 @@ export const labelOptions = [
 export const useOptionsStore = create<OptionsState>()(set => ({
   labelOptions: labelOptions,
   setLabelOptions: labelOptions => set({ labelOptions }),
+  originalnewAbnormalityLabelOptions: [],
+  setOriginalnewAbnormalityLabelOptions: originalOptions =>
+    set({ originalnewAbnormalityLabelOptions: originalOptions }),
 }))
 
 export const severityOptions = [
@@ -61,7 +66,8 @@ export const locationOptions = [
 ]
 
 const InfoForm: React.FC<FormProps> = (props: FormProps) => {
-  const labelOptions = useOptionsStore(state => state.labelOptions)
+  const { labelOptions } = useOptionsStore(state => state)
+
   return (
     <Form layout="vertical" {...props}>
       <Form.Item

@@ -2,3 +2,5 @@ dist
 node_modules
 renderer/.next
 app
+images_data
+labels_data

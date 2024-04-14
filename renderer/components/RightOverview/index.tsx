@@ -1,3 +1,4 @@
+import { useMemo } from "react"
 import { Badge, Button, Card, List, Space, Table } from "antd"
 import { ColumnType, ColumnsType } from "antd/es/table"
 import { locationOptions, severityOptions, useOptionsStore } from "../InfoForm"
@@ -10,76 +11,6 @@ import {
   useRectsStore,
   useTableStore,
 } from "../../lib/store"
-
-const labelOptions = useOptionsStore.getState().labelOptions
-
-const labelColumns: ColumnsType = [
-  {
-    title: "Index",
-    dataIndex: "index",
-    align: "center",
-    width: 20,
-    ellipsis: true,
-    render: (text, record, index) => index + 1,
-  },
-  {
-    title: "Label",
-    dataIndex: "customLabel",
-    ellipsis: true,
-    width: 50,
-    filters: labelOptions.map(label => ({
-      text: label.label,
-      value: label.value,
-    })),
-    onFilter: (value, record: any) => record.customLabel === value,
-    filterOnClose: true,
-    render: text => {
-      return (
-        <Badge
-          color={labelOptions.find(item => item.value === text)?.color}
-          text={text}
-        />
-      )
-    },
-  },
-  {
-    title: "Abnormality Name",
-    dataIndex: "abnormalityName",
-    width: 50,
-    ellipsis: true,
-  },
-  {
-    title: "Severity",
-    dataIndex: "severity",
-    width: 50,
-    filters: severityOptions.map(severity => ({
-      text: severity.label,
-      value: severity.value,
-    })),
-    onFilter: (value, record: any) => record.severity === value,
-    filterOnClose: true,
-    ellipsis: true,
-  },
-  {
-    title: "Location",
-    dataIndex: "location",
-    width: 50,
-    ellipsis: true,
-    filters: locationOptions.map(label => ({
-      text: label.label,
-      value: label.value,
-    })),
-    onFilter: (value, record: any) => record.location === value,
-    filterOnClose: true,
-  },
-  {
-    title: "Description",
-    dataIndex: "description",
-    width: 100,
-    className: "max-w-24",
-    ellipsis: true,
-  },
-]
 
 const fileColumns: ColumnsType = [
   {
@@ -99,6 +30,73 @@ const fileColumns: ColumnsType = [
 ]
 
 const RightOverview: React.FC = () => {
+  const { labelOptions } = useOptionsStore(state => state)
+  const labelColumns: ColumnsType = useMemo(
+    () => [
+      {
+        title: "Index",
+        dataIndex: "index",
+        align: "center",
+        width: 20,
+        ellipsis: true,
+        render: (text, record, index) => index + 1,
+      },
+      {
+        title: "Label",
+        dataIndex: "customLabel",
+        ellipsis: true,
+        width: 50,
+        filters: labelOptions.map(label => ({
+          text: label.label,
+          value: label.value,
+        })),
+        onFilter: (value, record: any) => record.customLabel === value,
+        filterOnClose: true,
+        render: text => {
+          return (
+            <Badge
+              key={text}
+              color={labelOptions.find(item => item.value === text)?.color}
+              text={text}
+            />
+          )
+        },
+      },
+      {
+        title: "Severity",
+        dataIndex: "severity",
+        width: 50,
+        filters: severityOptions.map(severity => ({
+          text: severity.label,
+          value: severity.value,
+        })),
+        onFilter: (value, record: any) => record.severity === value,
+        filterOnClose: true,
+        ellipsis: true,
+      },
+      {
+        title: "Location",
+        dataIndex: "location",
+        width: 50,
+        ellipsis: true,
+        filters: locationOptions.map(label => ({
+          text: label.label,
+          value: label.value,
+        })),
+        onFilter: (value, record: any) => record.location === value,
+        filterOnClose: true,
+      },
+      {
+        title: "Description",
+        dataIndex: "description",
+        width: 100,
+        className: "max-w-24",
+        ellipsis: true,
+      },
+    ],
+    [labelOptions, locationOptions]
+  )
+
   const { removeRectById, editRectById, setRects } = useRectsStore(
     state => state
   )
@@ -203,7 +201,7 @@ const RightOverview: React.FC = () => {
 
                     setFileUrl(previousFile.path)
                     setHasImage(true)
-                    window.ipc.on("readed-json", (data: any[], state) => {
+                    window.ipc.on("readed-image-json", (data: any[], state) => {
                       if (!data) {
                         setTableDataSource([])
                         setRects([])
@@ -224,7 +222,10 @@ const RightOverview: React.FC = () => {
                         setPolygons(polygons)
                       }
                     })
-                    window.ipc.send("read-json", previousFile.fileName)
+                    window.ipc.send("read-json", {
+                      fileName: previousFile.fileName,
+                      folderName: "images_data",
+                    })
                   }}
                 />
                 <Image
@@ -243,7 +244,7 @@ const RightOverview: React.FC = () => {
 
                     setFileUrl(nextFile.path)
                     setHasImage(true)
-                    window.ipc.on("readed-json", (data: any[], state) => {
+                    window.ipc.on("readed-image-json", (data: any[], state) => {
                       if (!data) {
                         setTableDataSource([])
                         setRects([])
@@ -262,7 +263,10 @@ const RightOverview: React.FC = () => {
                         setPolygons(polygons)
                       }
                     })
-                    window.ipc.send("read-json", nextFile.fileName)
+                    window.ipc.send("read-json", {
+                      fileName: nextFile.fileName,
+                      folderName: "images_data",
+                    })
                   }}
                 />
               </div>
@@ -283,7 +287,7 @@ const RightOverview: React.FC = () => {
                 onClick: async () => {
                   setFileUrl(record.path)
                   setHasImage(true)
-                  window.ipc.on("readed-json", (data: any[], state) => {
+                  window.ipc.on("readed-image-json", (data: any[], state) => {
                     if (!data && record.path !== fileUrl) {
                       setTableDataSource([])
                       setRects([])
@@ -304,7 +308,10 @@ const RightOverview: React.FC = () => {
                       setPolygons(polygons)
                     }
                   })
-                  window.ipc.send("read-json", record.fileName)
+                  window.ipc.send("read-json", {
+                    fileName: record.fileName,
+                    folderName: "images_data",
+                  })
                 },
               }
             }}

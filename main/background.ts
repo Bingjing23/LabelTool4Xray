@@ -13,6 +13,10 @@ if (isProd) {
 }
 
 ;(async () => {
+  protocol.registerSchemesAsPrivileged([
+    { scheme: "atom", privileges: { secure: true } },
+  ])
+
   await app.whenReady()
 
   const mainWindow = createWindow("main", {
@@ -43,7 +47,8 @@ app.on("window-all-closed", () => {
 ipcMain.on("message", async (event, arg) => {
   event.reply("message", `${arg} World!`)
 })
-const FOLDER_NAME = "images_data"
+const IMAGE_FOLDER_NAME = "images_data"
+const LABEL_FOLDER_NAME = "labels_data"
 
 const isImageFile = (fileName: string) => {
   const lowerCaseFileName = fileName.toLowerCase()
@@ -89,11 +94,13 @@ ipcMain.on("open-directory-dialog", event => {
 })
 
 ipcMain.on(
-  "save-json",
+  "save-image-json",
   (event, values: { data: any[]; fileName: string; path: string }) => {
     const { data, fileName, path: realPath } = values
-    const userDataPath = isProd ? app.getPath("exe") : app.getAppPath()
-    const folderPath = path.join(userDataPath, FOLDER_NAME)
+    const userDataPath = isProd
+      ? path.dirname(app.getPath("userData"))
+      : app.getAppPath()
+    const folderPath = path.join(userDataPath, IMAGE_FOLDER_NAME)
     const filePath = path.join(
       folderPath,
       path.basename(fileName, path.extname(fileName)) + ".json"
@@ -104,22 +111,60 @@ ipcMain.on(
     }
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2))
 
-    event.reply("saved-json", "success")
+    event.reply("saved-image-json", "success")
   }
 )
 
-ipcMain.on("read-json", (event, fileName: string) => {
-  const userDataPath = app.getAppPath()
-  const folderPath = path.join(userDataPath, FOLDER_NAME)
-  const filePath = path.join(
-    folderPath,
-    path.basename(fileName, path.extname(fileName)) + ".json"
-  )
-  try {
-    const data = fs.readFileSync(filePath, "utf8")
-    console.log("🦄 ~ ipcMain.on ~ data:", data)
-    event.reply("readed-json", JSON.parse(data), "success")
-  } catch (err) {
-    event.reply("readed-json", [], "error")
+ipcMain.on(
+  "save-label-json",
+  (event, values: { data: any[]; fileName: string; path: string }) => {
+    const { data, fileName, path: realPath } = values
+    const userDataPath = isProd
+      ? path.dirname(app.getPath("userData"))
+      : app.getAppPath()
+    const folderPath = path.join(userDataPath, LABEL_FOLDER_NAME)
+    const filePath = path.join(
+      folderPath,
+      path.basename(fileName, path.extname(fileName)) + ".json"
+    )
+
+    if (!fs.existsSync(folderPath)) {
+      fs.mkdirSync(folderPath, { recursive: true })
+    }
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2))
+
+    event.reply("saved-label-json", "success")
   }
-})
+)
+
+ipcMain.on(
+  "read-json",
+  (
+    event,
+    params: { fileName: string; folderName: "images_data" | "labels_data" }
+  ) => {
+    const { fileName, folderName } = params
+    const userDataPath = isProd
+      ? path.dirname(app.getPath("userData"))
+      : app.getAppPath()
+    const folderPath = path.join(userDataPath, folderName)
+    const filePath = path.join(
+      folderPath,
+      path.basename(fileName, path.extname(fileName)) + ".json"
+    )
+    try {
+      const data = fs.readFileSync(filePath, "utf8")
+      if (folderName === "images_data") {
+        event.reply("readed-image-json", JSON.parse(data), "success")
+      } else if (folderName === "labels_data") {
+        event.reply("readed-label-json", JSON.parse(data), "success")
+      }
+    } catch (err) {
+      if (folderName === "images_data") {
+        event.reply("readed-image-json", [], "error")
+      } else if (folderName === "labels_data") {
+        event.reply("readed-label-json", [], "error")
+      }
+    }
+  }
+)

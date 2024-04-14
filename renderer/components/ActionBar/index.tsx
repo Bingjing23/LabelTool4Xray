@@ -28,10 +28,10 @@ const ActionBar = () => {
   }
 
   const saveJson = async (values: any) => {
-    window.ipc.on("saved-json", message => {
-      console.log("🦄 ~ saveJson ~ message:", message)
+    window.ipc.on("saved-image-json", message => {
+      console.log("🦄 ~ saveImageJson ~ message:", message)
     })
-    window.ipc.send("save-json", {
+    window.ipc.send("save-image-json", {
       data: values,
       fileName: getFileNameFromPath(fileUrl),
       path: fileUrl,

@@ -1,5 +1,5 @@
 import { Badge, Empty, Form, Modal } from "antd"
-import React, { Fragment, useEffect, useState } from "react"
+import React, { Fragment, useEffect, useRef, useState } from "react"
 import { v4 as uuidv4 } from "uuid"
 import { Stage, Layer, Image, Rect } from "react-konva"
 import useImage from "use-image"
@@ -51,19 +51,70 @@ const DrawImage = () => {
   const handleMouseDown = methods[selectMethod].handleMouseDown
   const handleMouseMove = methods[selectMethod].handleMouseMove
 
-  const { labelOptions, setLabelOptions } = useOptionsStore(state => state)
+  const {
+    labelOptions,
+    setLabelOptions,
+    originalnewAbnormalityLabelOptions,
+    setOriginalnewAbnormalityLabelOptions,
+  } = useOptionsStore(state => state)
+
+  const firstRender = useRef(true)
+
+  useEffect(() => {
+    if (!modalOpen) return
+    window.ipc.on("readed-label-json", (data: any[], state) => {
+      if (firstRender.current) {
+        setOriginalnewAbnormalityLabelOptions([
+          ...originalnewAbnormalityLabelOptions,
+          ...data,
+        ])
+        setLabelOptions([
+          ...labelOptions,
+          ...data?.map((item, index) => ({
+            label: (
+              <Badge
+                key={item}
+                color={
+                  xtermColors[
+                    (labelOptions.length + index) % xtermColors.length
+                  ]
+                }
+                text={item}
+              />
+            ),
+            value: item,
+            color:
+              xtermColors[(labelOptions.length + index) % xtermColors.length],
+          })),
+        ])
+        firstRender.current = false
+      }
+    })
+    window.ipc.send("read-json", {
+      fileName: "newAbnormalityNames",
+      folderName: "labels_data",
+    })
+  }, [modalOpen])
 
   const handleSubmit = values => {
     console.log("Form Values:", values)
     console.log("currentPoints:", currentPoints, currentRect)
-    if (selectMethod === "rectangle") {
-      addTableDataSource({ ...values, rect: currentRect, rowId: uuidv4() })
-      setCurrentRect(null)
-    } else if (selectMethod === "polygon") {
-      addTableDataSource({ ...values, polygon: currentPoints, rowId: uuidv4() })
-      setCurrentPoints(null)
-    }
     const newAbnormalityName = values.newAbnormalityName
+
+    setOriginalnewAbnormalityLabelOptions([
+      ...originalnewAbnormalityLabelOptions,
+      newAbnormalityName,
+    ])
+
+    window.ipc.send("save-label-json", {
+      data: [...originalnewAbnormalityLabelOptions, newAbnormalityName],
+      fileName: "newAbnormalityNames",
+      path: fileUrl,
+    })
+    window.ipc.on("saved-label-json", message => {
+      console.log("🦄 ~ saveLabelJson ~ message:", message)
+    })
+
     setLabelOptions([
       ...labelOptions,
       {
@@ -78,6 +129,24 @@ const DrawImage = () => {
         color: xtermColors[labelOptions.length % xtermColors.length],
       },
     ])
+    if (selectMethod === "rectangle") {
+      addTableDataSource({
+        ...values,
+        customLabel: newAbnormalityName || values.customLabel,
+        rect: currentRect,
+        rowId: uuidv4(),
+      })
+      setCurrentRect(null)
+    } else if (selectMethod === "polygon") {
+      addTableDataSource({
+        ...values,
+        customLabel: newAbnormalityName || values.customLabel,
+        polygon: currentPoints,
+        rowId: uuidv4(),
+      })
+      setCurrentPoints(null)
+    }
+
     setModalOpen(false)
     form.resetFields()
   }
