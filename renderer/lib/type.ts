@@ -1,7 +1,7 @@
 export type Medical = {
   abnormalityName: string
   severity: string
-  location: string
+  anatomicalRegions: string
   description: string
   customLabel: string
 }

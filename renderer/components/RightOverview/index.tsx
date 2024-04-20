@@ -1,7 +1,11 @@
 import { useMemo } from "react"
 import { Badge, Button, Card, List, Space, Table } from "antd"
 import { ColumnType, ColumnsType } from "antd/es/table"
-import { locationOptions, severityOptions, useOptionsStore } from "../InfoForm"
+import {
+  anatomicalRegionsOptions,
+  severityOptions,
+  useOptionsStore,
+} from "../InfoForm"
 import Image from "next/image"
 import LeftArrow from "../../public/svg/Left.svg"
 import RightArrow from "../../public/svg/Right.svg"
@@ -75,15 +79,15 @@ const RightOverview: React.FC = () => {
         ellipsis: true,
       },
       {
-        title: "Location",
-        dataIndex: "location",
+        title: "Anatomical Regions",
+        dataIndex: "anatomicalRegions",
         width: 50,
         ellipsis: true,
-        filters: locationOptions.map(label => ({
+        filters: anatomicalRegionsOptions.map(label => ({
           text: label.label,
           value: label.value,
         })),
-        onFilter: (value, record: any) => record.location === value,
+        onFilter: (value, record: any) => record.anatomicalRegions === value,
         filterOnClose: true,
       },
       {
@@ -94,7 +98,7 @@ const RightOverview: React.FC = () => {
         ellipsis: true,
       },
     ],
-    [labelOptions, locationOptions]
+    [labelOptions, anatomicalRegionsOptions]
   )
 
   const { removeRectById, editRectById, setRects } = useRectsStore(

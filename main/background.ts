@@ -1,8 +1,10 @@
 import path from "path"
 import fs from "fs"
 import { app, dialog, ipcMain, net, protocol } from "electron"
+import { exec } from "child_process"
 import serve from "electron-serve"
 import { createWindow } from "./helpers"
+import { createImages } from "./helpers/convertImage"
 
 const isProd = process.env.NODE_ENV === "production"
 
@@ -44,9 +46,44 @@ app.on("window-all-closed", () => {
   app.quit()
 })
 
-ipcMain.on("message", async (event, arg) => {
-  event.reply("message", `${arg} World!`)
+async function startProcess(event: Electron.IpcMainEvent, value: any) {
+  if (event) {
+    /*
+      'parentDir' is used to get this folder -> /Applications/<youApp>.app/Contents/ 
+      so that we can run our .sh file which will also launch the Python or Rust script.
+      So the script folder will be moved into parentDir/ in prod mode.
+      Note: this will only work if the target mahcine have Python or Rust installed.
+    */
+    let scriptPath
+    if (isProd) {
+      const parentDir = path.dirname(path.dirname(path.dirname(__dirname)))
+      scriptPath = path.join(parentDir, "scripts/runner.sh")
+    } else {
+      scriptPath = path.join(__dirname, "../scripts/runner.sh")
+    }
+    // console.log(`DEBUG: scriptPath: ${scriptPath}`)
+    const cmd = `sh "${scriptPath}" ${value}`
+
+    exec(cmd, (error, stdout) => {
+      if (error) {
+        console.error(`ERROR: Error executing post-install script: ${error}`) // will be seen only dev mode, not in prod mode
+        event.sender.send("log", error.message) // will be seen in both dev and prod mode (in the frontend)
+        return
+      }
+      event.sender.send("log", "Python script executed successfully")
+      event.sender.send("message", stdout)
+    })
+
+    // ~/.yourApp.log will be helpfull to log process in production mode
+  }
+}
+
+ipcMain.on("run-sh", async (event, value) => {
+  console.log("DEBUG: starting process") // for dev mode
+  event.sender.send("log", "Running...") // for prod mode
+  await startProcess(event, value)
 })
+
 const IMAGE_FOLDER_NAME = "images_data"
 const LABEL_FOLDER_NAME = "labels_data"
 
@@ -70,21 +107,33 @@ ipcMain.on("open-directory-dialog", event => {
     .then(result => {
       if (!result.canceled && result.filePaths.length > 0) {
         const directoryPath = result.filePaths[0]
-        fs.readdir(directoryPath, (err, files) => {
+        fs.readdir(directoryPath, async (err, files) => {
           if (err) {
             console.error("Error fetching files:", err)
             event.reply("selected-directory", [])
             return
           }
-          const filteredFiles = files
+          const filteredImageFiles = files
             .filter(file => {
-              return (
-                isImageFile(path.extname(file)) ||
-                isDicomFile(path.extname(file))
-              )
+              return isImageFile(path.extname(file))
             })
             .map(file => path.join(directoryPath, file))
-          event.reply("selected-directory", filteredFiles)
+
+          const originalDicomFiles = files
+            .filter(file => {
+              return isDicomFile(path.extname(file))
+            })
+            .map(file => path.join(directoryPath, file))
+
+          const filteredDicomFiles = await createImages(
+            originalDicomFiles,
+            directoryPath
+          )
+
+          event.reply("selected-directory", [
+            ...filteredImageFiles,
+            ...filteredDicomFiles,
+          ])
         })
       }
     })
