@@ -10,6 +10,8 @@ import {
 } from "./type"
 
 export const useBaseStore = create<BaseState>(set => ({
+  loading: false,
+  setLoading: (loading: boolean) => set({ loading }),
   fileUrl: "",
   setFileUrl: (fileUrl: string) => set({ fileUrl }),
   hasImage: false,
@@ -20,7 +22,7 @@ export const useBaseStore = create<BaseState>(set => ({
   selectMethod: "rectangle",
   setSelectMethod: (selectMethod: "rectangle" | "polygon") =>
     set({ selectMethod }),
-    
+
   imageBrightness: 100,
   setImageBrightness: (imageBrightness: number) => set({ imageBrightness }),
   imageContrast: 100,

@@ -4,6 +4,8 @@ import { useBaseStore, useTableStore } from "../../lib/store"
 
 const ActionBar = () => {
   const {
+    loading,
+    setLoading,
     fileUrl,
     setFilesData,
     setSelectMethod,
@@ -21,7 +23,9 @@ const ActionBar = () => {
   }
 
   const openDialogAndFetchFiles = async () => {
+    setLoading(true)
     window.ipc.on("selected-directory", (files: string[]) => {
+      setLoading(false)
       setFilesData(
         files.map((item: string) => ({
           key: item,

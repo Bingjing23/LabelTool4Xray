@@ -7,6 +7,8 @@
 # if __name__ == "__main__":
 #     square_of_number()
 
+# pyinstaller preprocessing.py -F --collect-submodules=pydicom
+
 import sys
 import pydicom
 from PIL import Image, ImageEnhance

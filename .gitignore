@@ -4,3 +4,6 @@ renderer/.next
 app
 images_data
 labels_data
+scripts/dicom
+scripts/build
+scripts/dist
