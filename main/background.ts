@@ -4,7 +4,6 @@ import { app, dialog, ipcMain, net, protocol } from "electron"
 import { exec } from "child_process"
 import serve from "electron-serve"
 import { createWindow } from "./helpers"
-import { createImages } from "./helpers/convertImage"
 
 const isProd = process.env.NODE_ENV === "production"
 
@@ -84,8 +83,14 @@ ipcMain.on("run-sh", async (event, value) => {
   await startProcess(event, value)
 })
 
+const CONVERT_IMAGE_FOLDER_NAME = "converted_images"
 const IMAGE_FOLDER_NAME = "images_data"
 const LABEL_FOLDER_NAME = "labels_data"
+
+// const folderPath = path.join(directoryPath, CONVERT_IMAGE_FOLDER_NAME)
+// if (!fs.existsSync(folderPath)) {
+//   fs.mkdirSync(folderPath)
+// }
 
 const isImageFile = (fileName: string) => {
   const lowerCaseFileName = fileName.toLowerCase()
@@ -125,14 +130,9 @@ ipcMain.on("open-directory-dialog", event => {
             })
             .map(file => path.join(directoryPath, file))
 
-          const filteredDicomFiles = await createImages(
-            originalDicomFiles,
-            directoryPath
-          )
-
           event.reply("selected-directory", [
             ...filteredImageFiles,
-            ...filteredDicomFiles,
+            ...originalDicomFiles,
           ])
         })
       }

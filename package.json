@@ -11,8 +11,6 @@
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
-    "canvas": "^2.11.2",
-    "dicom-parser": "^1.8.21",
     "electron-serve": "^1.3.0",
     "electron-store": "^8.1.0"
   },
