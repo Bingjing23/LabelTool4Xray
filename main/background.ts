@@ -1,6 +1,6 @@
 import path from "path"
 import fs from "fs"
-import { app, dialog, ipcMain, net, protocol } from "electron"
+import { app, dialog, ipcMain, net, protocol, globalShortcut } from "electron"
 import { exec } from "child_process"
 import serve from "electron-serve"
 import { createWindow } from "./helpers"
@@ -46,6 +46,16 @@ if (isProd) {
 app.on("window-all-closed", () => {
   app.quit()
 })
+
+// app.on("browser-window-focus", function () {
+//   globalShortcut.register("CommandOrControl+R", () => {
+//     console.log("CommandOrControl+R is pressed: Shortcut Disabled")
+//   })
+// })
+
+// app.on("browser-window-blur", function () {
+//   globalShortcut.unregister("CommandOrControl+R")
+// })
 
 async function startProcess(value: any) {
   if (value) {

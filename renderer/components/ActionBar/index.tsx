@@ -1,6 +1,7 @@
 import { Button, Dropdown, MenuProps, Modal, Slider } from "antd"
 import { DownOutlined } from "@ant-design/icons"
 import { useBaseStore, useTableStore } from "../../lib/store"
+import { useKeyboardShortcut } from "../../lib/useKeyboardShortcut"
 
 export const getFileNameFromPath = (path: string) => {
   // 正则表达式匹配最后一个斜杠后的所有字符
@@ -62,6 +63,23 @@ const ActionBar = () => {
       console.log("🦄 ~ saveImageJson ~ message:", message)
     })
   }
+
+  const handleSaveFile = () => {
+    setHasSaved(true)
+    saveJson(tableDataSource)
+  }
+
+  useKeyboardShortcut(["ctrl", "s"], handleSaveFile)
+  useKeyboardShortcut(["meta", "s"], handleSaveFile)
+  useKeyboardShortcut(["ctrl", "alt", "r"], () =>
+    setSelectMethod("rectangle")
+  )
+  useKeyboardShortcut(["meta", "alt", "r"], () =>
+    setSelectMethod("rectangle")
+  )
+  useKeyboardShortcut(["ctrl", "alt", "p"], () => setSelectMethod("polygon"))
+  useKeyboardShortcut(["meta", "alt", "p"], () => setSelectMethod("polygon"))
+
   const fileActionItems: MenuProps["items"] = [
     {
       key: "folder",
@@ -78,8 +96,7 @@ const ActionBar = () => {
           type="link"
           className="mr-2"
           onClick={() => {
-            setHasSaved(true)
-            saveJson(tableDataSource)
+            handleSaveFile()
           }}
         >
           Save

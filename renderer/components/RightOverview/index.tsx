@@ -170,7 +170,6 @@ const RightOverview: React.FC = () => {
   }
 
   const warnSave = async () => {
-    console.log("🦄 ~ warnSave ~ hasChanged:", hasChanged)
     if (!hasSaved && hasChanged && !autoSave) {
       await modal.confirm({
         title: "Warning",
