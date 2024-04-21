@@ -2,9 +2,16 @@ import { Button, Dropdown, MenuProps, Modal, Slider } from "antd"
 import { DownOutlined } from "@ant-design/icons"
 import { useBaseStore, useTableStore } from "../../lib/store"
 
+export const getFileNameFromPath = (path: string) => {
+  // 正则表达式匹配最后一个斜杠后的所有字符
+  const match = path.match(/[^\\/]+\.[^\\/]+$/)
+  return match ? match[0] : ""
+}
+
 const ActionBar = () => {
   const [modal, contextHolder] = Modal.useModal()
   const {
+    setHasSaved,
     setLoading,
     fileUrl,
     setFilesData,
@@ -17,12 +24,6 @@ const ActionBar = () => {
     setImageContrast,
   } = useBaseStore(state => state)
   const { tableDataSource } = useTableStore(state => state)
-
-  const getFileNameFromPath = (path: string) => {
-    // 正则表达式匹配最后一个斜杠后的所有字符
-    const match = path.match(/[^\\/]+\.[^\\/]+$/)
-    return match ? match[0] : ""
-  }
 
   const openDialogAndFetchFiles = async () => {
     setLoading(true)
@@ -77,6 +78,7 @@ const ActionBar = () => {
           type="link"
           className="mr-2"
           onClick={() => {
+            setHasSaved(true)
             saveJson(tableDataSource)
           }}
         >

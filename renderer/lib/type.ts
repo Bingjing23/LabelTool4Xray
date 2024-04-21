@@ -23,6 +23,12 @@ export type RectData = Medical & {
 export type BaseState = {
   loading: boolean
   setLoading: (loading: boolean) => void
+  hasChanged: boolean
+  setHasChanged: (hasChanged: boolean) => void
+  hasSaved: boolean
+  setHasSaved: (hasSaved: boolean) => void
+  autoSave: boolean
+  setAutoSave: (autoSave: boolean) => void
   fileUrl: string
   setFileUrl: (fileUrl: string) => void
   hasImage: boolean

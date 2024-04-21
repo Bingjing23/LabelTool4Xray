@@ -12,6 +12,12 @@ import {
 export const useBaseStore = create<BaseState>(set => ({
   loading: false,
   setLoading: (loading: boolean) => set({ loading }),
+  hasChanged: false,
+  setHasChanged: (hasChanged: boolean) => set({ hasChanged }),
+  hasSaved: false,
+  setHasSaved: (hasSaved: boolean) => set({ hasSaved }),
+  autoSave: false,
+  setAutoSave: (autoSave: boolean) => set({ autoSave }),
   fileUrl: "",
   setFileUrl: (fileUrl: string) => set({ fileUrl }),
   hasImage: false,

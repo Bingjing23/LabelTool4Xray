@@ -19,6 +19,7 @@ const DrawImage = () => {
     hasImage,
     fileUrl,
     fileDirectory,
+    setHasChanged,
     imageBrightness,
     imageContrast,
   } = useBaseStore(state => state)
@@ -118,7 +119,7 @@ const DrawImage = () => {
       })
       setCurrentPoints(null)
     }
-
+    setHasChanged(true)
     setModalOpen(false)
     form.resetFields()
   }

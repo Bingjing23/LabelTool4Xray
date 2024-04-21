@@ -1,5 +1,5 @@
-import { useMemo } from "react"
-import { Badge, Button, Card, List, Space, Table } from "antd"
+import { useMemo, useState } from "react"
+import { Badge, Button, Card, Modal, Space, Table } from "antd"
 import { ColumnType, ColumnsType } from "antd/es/table"
 import {
   anatomicalRegionsOptions,
@@ -15,6 +15,7 @@ import {
   useRectsStore,
   useTableStore,
 } from "../../lib/store"
+import { getFileNameFromPath } from "../ActionBar"
 
 const fileColumns: ColumnsType = [
   {
@@ -114,8 +115,19 @@ const RightOverview: React.FC = () => {
     tableDataSource,
   } = useTableStore(state => state)
 
-  const { fileUrl, setFileUrl, setHasImage, filesData, fileDirectory } =
-    useBaseStore(state => state)
+  const {
+    hasSaved,
+    setHasSaved,
+    hasChanged,
+    setHasChanged,
+    autoSave,
+    setAutoSave,
+    fileUrl,
+    setFileUrl,
+    setHasImage,
+    filesData,
+    fileDirectory,
+  } = useBaseStore(state => state)
 
   const operationColumn: ColumnType<any> = {
     title: "Operations",
@@ -134,11 +146,61 @@ const RightOverview: React.FC = () => {
             removePolygonById(record.polygon.id)
           }
           removeTableDataSourceByIndex(index)
+          setHasChanged(true)
         }}
       >
         Delete
       </Button>
     ),
+  }
+
+  const [modal, contextHolder] = Modal.useModal()
+  const [choosedAutoSave, setChoosedAutoSave] = useState(false)
+
+  const saveJson = () => {
+    window.ipc.send("save-image-json", {
+      fileDirectory,
+      data: tableDataSource,
+      fileName: getFileNameFromPath(fileUrl),
+      path: fileUrl,
+    })
+    window.ipc.on("saved-image-json", message => {
+      console.log("🦄 ~ saveImageJson ~ message:", message)
+    })
+  }
+
+  const warnSave = async () => {
+    console.log("🦄 ~ warnSave ~ hasChanged:", hasChanged)
+    if (!hasSaved && hasChanged && !autoSave) {
+      await modal.confirm({
+        title: "Warning",
+        content: "You have not saved yet. Do you want to save?",
+        okText: "Yes",
+        cancelText: "No",
+        onOk: () => {
+          saveJson()
+        },
+      })
+    }
+  }
+
+  const warnAutoSave = async () => {
+    if (!choosedAutoSave && hasChanged) {
+      await modal.confirm({
+        title: "Tips",
+        content: "Do you want to set automatic saving?",
+        okText: "Yes",
+        cancelText: "No",
+        onOk: () => {
+          setAutoSave(true)
+          setChoosedAutoSave(true)
+        },
+        onCancel: () => {
+          setAutoSave(false)
+          setChoosedAutoSave(true)
+        },
+      })
+    }
   }
 
   return (
@@ -176,6 +238,7 @@ const RightOverview: React.FC = () => {
                       },
                     })
                   }
+                  setHasChanged(true)
                 },
               }
             }}
@@ -191,11 +254,29 @@ const RightOverview: React.FC = () => {
             <div className="flex justify-between items-center">
               <span>Files</span>
               <div className="flex gap-4">
+                <Button
+                  type="text"
+                  className="p-0 w-6 h-6 rounded-md font-bold text-white"
+                  style={{ backgroundColor: autoSave ? "#1677ff" : "#f0f0f0" }}
+                  onClick={() => {
+                    setAutoSave(!autoSave)
+                  }}
+                >
+                  S
+                </Button>
                 <Image
                   priority
                   src={LeftArrow}
                   style={{ cursor: "pointer" }}
-                  onClick={() => {
+                  onClick={async () => {
+                    await warnSave()
+                    await warnAutoSave()
+                    if (autoSave) {
+                      saveJson()
+                    }
+                    setHasSaved(false)
+                    setHasChanged(false)
+
                     const currentIndex = filesData.findIndex(
                       item => item.path === fileUrl
                     )
@@ -236,7 +317,14 @@ const RightOverview: React.FC = () => {
                   priority
                   src={RightArrow}
                   style={{ cursor: "pointer" }}
-                  onClick={() => {
+                  onClick={async () => {
+                    await warnSave()
+                    await warnAutoSave()
+                    if (autoSave) {
+                      saveJson()
+                    }
+                    setHasSaved(false)
+                    setHasChanged(false)
                     const currentIndex = filesData.findIndex(
                       item => item.path === fileUrl
                     )
@@ -290,6 +378,14 @@ const RightOverview: React.FC = () => {
             onRow={(record: any) => {
               return {
                 onClick: async () => {
+                  await warnSave()
+                  await warnAutoSave()
+                  if (autoSave) {
+                    saveJson()
+                  }
+                  setHasSaved(false)
+                  setHasChanged(false)
+
                   setFileUrl(record.path)
                   setHasImage(true)
                   window.ipc.on("readed-image-json", (data: any[], state) => {
@@ -327,6 +423,7 @@ const RightOverview: React.FC = () => {
             }}
           />
         </Card>
+        {contextHolder}
       </Space>
     </>
   )

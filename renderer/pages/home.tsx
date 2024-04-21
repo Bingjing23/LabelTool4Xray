@@ -5,7 +5,8 @@ import RightOverview from "../components/RightOverview"
 import ActionBar from "../components/ActionBar"
 import dynamic from "next/dynamic"
 import { useBaseStore } from "../lib/store"
-import { labelOptions, useOptionsStore } from "../components/InfoForm"
+import { useShallow } from "zustand/react/shallow"
+import { useOptionsStore } from "../components/InfoForm"
 import { xtermColors } from "../components/InfoForm/colors"
 
 const { Content } = Layout
@@ -15,7 +16,12 @@ export default function HomePage() {
     ssr: false,
   })
 
-  const { loading, fileDirectory } = useBaseStore(state => state)
+  const { loading, fileDirectory } = useBaseStore(
+    useShallow(state => ({
+      loading: state.loading,
+      fileDirectory: state.fileDirectory,
+    }))
+  )
 
   const {
     labelOptions,
