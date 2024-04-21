@@ -1,10 +1,12 @@
-import React from "react"
+import React, { useEffect, useRef } from "react"
 import Head from "next/head"
-import { Layout, Spin, Typography } from "antd"
+import { Badge, Layout, Spin, Typography } from "antd"
 import RightOverview from "../components/RightOverview"
 import ActionBar from "../components/ActionBar"
 import dynamic from "next/dynamic"
 import { useBaseStore } from "../lib/store"
+import { labelOptions, useOptionsStore } from "../components/InfoForm"
+import { xtermColors } from "../components/InfoForm/colors"
 
 const { Content } = Layout
 
@@ -13,7 +15,51 @@ export default function HomePage() {
     ssr: false,
   })
 
-  const { loading } = useBaseStore(state => state)
+  const { loading, fileDirectory } = useBaseStore(state => state)
+
+  const {
+    labelOptions,
+    setLabelOptions,
+    originalnewAbnormalityLabelOptions,
+    setOriginalnewAbnormalityLabelOptions,
+  } = useOptionsStore(state => state)
+
+  const firstRender = useRef(true)
+
+  // 初始化文件里储存的标签值
+  useEffect(() => {
+    if (!firstRender.current || !fileDirectory) return
+    window.ipc.send("read-json", {
+      fileDirectory,
+      fileName: "newAbnormalityNames",
+      folderName: "labels_data",
+    })
+    firstRender.current = false
+
+    window.ipc.on("readed-label-json", (data: any[], state) => {
+      setOriginalnewAbnormalityLabelOptions([
+        ...originalnewAbnormalityLabelOptions,
+        ...data,
+      ])
+      setLabelOptions([
+        ...labelOptions,
+        ...data?.map((item, index) => ({
+          label: (
+            <Badge
+              key={item}
+              color={
+                xtermColors[(labelOptions.length + index) % xtermColors.length]
+              }
+              text={item}
+            />
+          ),
+          value: item,
+          color:
+            xtermColors[(labelOptions.length + index) % xtermColors.length],
+        })),
+      ])
+    })
+  }, [fileDirectory])
 
   return (
     <React.Fragment>

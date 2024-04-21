@@ -114,9 +114,8 @@ const RightOverview: React.FC = () => {
     tableDataSource,
   } = useTableStore(state => state)
 
-  const { fileUrl, setFileUrl, setHasImage, filesData } = useBaseStore(
-    state => state
-  )
+  const { fileUrl, setFileUrl, setHasImage, filesData, fileDirectory } =
+    useBaseStore(state => state)
 
   const operationColumn: ColumnType<any> = {
     title: "Operations",
@@ -227,6 +226,7 @@ const RightOverview: React.FC = () => {
                       }
                     })
                     window.ipc.send("read-json", {
+                      fileDirectory,
                       fileName: previousFile.fileName,
                       folderName: "images_data",
                     })
@@ -268,6 +268,7 @@ const RightOverview: React.FC = () => {
                       }
                     })
                     window.ipc.send("read-json", {
+                      fileDirectory,
                       fileName: nextFile.fileName,
                       folderName: "images_data",
                     })
@@ -313,6 +314,7 @@ const RightOverview: React.FC = () => {
                     }
                   })
                   window.ipc.send("read-json", {
+                    fileDirectory,
                     fileName: record.fileName,
                     folderName: "images_data",
                   })

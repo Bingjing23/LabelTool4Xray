@@ -4,8 +4,8 @@ import { app, dialog, ipcMain, net, protocol } from "electron"
 import { exec } from "child_process"
 import serve from "electron-serve"
 import { createWindow } from "./helpers"
-import util from "util"
 import { platform } from "process"
+import util from "util"
 
 const isProd = process.env.NODE_ENV === "production"
 
@@ -88,7 +88,6 @@ async function startProcess(value: any) {
   }
 }
 
-const CONVERT_IMAGE_FOLDER_NAME = "converted_images"
 const IMAGE_FOLDER_NAME = "images_data"
 const LABEL_FOLDER_NAME = "labels_data"
 
@@ -104,11 +103,6 @@ const isImageFile = (fileName: string) => {
   )
 }
 
-const isDicomFile = (fileName: string) => {
-  const lowerCaseFileName = fileName.toLowerCase()
-  return [".dcm", ".dicom"].some(ext => lowerCaseFileName.endsWith(ext))
-}
-
 ipcMain.on("open-directory-dialog", event => {
   dialog
     .showOpenDialog({
@@ -119,9 +113,13 @@ ipcMain.on("open-directory-dialog", event => {
       if (!result.canceled && result.filePaths.length > 0) {
         const directoryPath = result.filePaths[0]
         await startProcess(directoryPath)
-        const convertedDirectoryPath = path.join(
+        const outputDirectoryPath = path.join(
           path.dirname(directoryPath),
-          `Preprocessing_${path.basename(directoryPath)}`
+          `${path.basename(directoryPath)}_output`
+        )
+        const convertedDirectoryPath = path.join(
+          outputDirectoryPath,
+          `${path.basename(directoryPath)}_preprocessing`
         )
         fs.readdir(convertedDirectoryPath, (err, files) => {
           if (err) {
@@ -136,7 +134,11 @@ ipcMain.on("open-directory-dialog", event => {
             })
             .map(file => path.join(convertedDirectoryPath, file))
 
-          event.reply("selected-directory", filteredImageFiles)
+          event.reply(
+            "selected-directory",
+            filteredImageFiles,
+            outputDirectoryPath
+          )
         })
       }
       event.reply("selected-directory", [])
@@ -149,10 +151,17 @@ ipcMain.on("open-directory-dialog", event => {
 
 ipcMain.on(
   "save-image-json",
-  (event, values: { data: any[]; fileName: string; path: string }) => {
-    const { data, fileName, path: realPath } = values
-    const userDataPath = isProd ? app.getPath("userData") : app.getAppPath()
-    const folderPath = path.join(userDataPath, IMAGE_FOLDER_NAME)
+  (
+    event,
+    values: {
+      fileDirectory: string
+      data: any[]
+      fileName: string
+      path: string
+    }
+  ) => {
+    const { fileDirectory, data, fileName, path: realPath } = values
+    const folderPath = path.join(fileDirectory, IMAGE_FOLDER_NAME)
     const filePath = path.join(
       folderPath,
       path.basename(fileName, path.extname(fileName)) + ".json"
@@ -169,10 +178,17 @@ ipcMain.on(
 
 ipcMain.on(
   "save-label-json",
-  (event, values: { data: any[]; fileName: string; path: string }) => {
-    const { data, fileName, path: realPath } = values
-    const userDataPath = isProd ? app.getPath("userData") : app.getAppPath()
-    const folderPath = path.join(userDataPath, LABEL_FOLDER_NAME)
+  (
+    event,
+    values: {
+      fileDirectory: string
+      data: any[]
+      fileName: string
+      path: string
+    }
+  ) => {
+    const { fileDirectory, data, fileName, path: realPath } = values
+    const folderPath = path.join(fileDirectory, LABEL_FOLDER_NAME)
     const filePath = path.join(
       folderPath,
       path.basename(fileName, path.extname(fileName)) + ".json"
@@ -191,11 +207,14 @@ ipcMain.on(
   "read-json",
   (
     event,
-    params: { fileName: string; folderName: "images_data" | "labels_data" }
+    params: {
+      fileDirectory: string
+      fileName: string
+      folderName: "images_data" | "labels_data"
+    }
   ) => {
-    const { fileName, folderName } = params
-    const userDataPath = isProd ? app.getPath("userData") : app.getAppPath()
-    const folderPath = path.join(userDataPath, folderName)
+    const { fileDirectory, fileName, folderName } = params
+    const folderPath = path.join(fileDirectory, folderName)
     const filePath = path.join(
       folderPath,
       path.basename(fileName, path.extname(fileName)) + ".json"

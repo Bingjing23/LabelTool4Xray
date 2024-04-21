@@ -1,7 +1,7 @@
 import { Badge, Empty, Form, Modal } from "antd"
-import React, { Fragment, useEffect, useRef, useState } from "react"
+import React, { Fragment, useEffect, useState } from "react"
 import { v4 as uuidv4 } from "uuid"
-import { Stage, Layer, Image, Rect } from "react-konva"
+import { Stage, Layer, Image } from "react-konva"
 import useImage from "use-image"
 import InfoForm, { useOptionsStore } from "../InfoForm"
 import useSelectMethodFuncs from "./useSelectMethodFuncs"
@@ -13,21 +13,22 @@ import {
 } from "../../lib/store"
 import { xtermColors } from "../InfoForm/colors"
 
-const isDicomFile = (fileName: string) => {
-  const lowerCaseFileName = fileName.toLowerCase()
-  return [".dcm", ".dicom"].some(ext => lowerCaseFileName.endsWith(ext))
-}
-
 const DrawImage = () => {
-  const { selectMethod, hasImage, fileUrl, imageBrightness, imageContrast } =
-    useBaseStore(state => state)
+  const {
+    selectMethod,
+    hasImage,
+    fileUrl,
+    fileDirectory,
+    imageBrightness,
+    imageContrast,
+  } = useBaseStore(state => state)
   const [size, setSize] = useState<{ width: number; height: number }>({
     width: 960,
     height: 720,
   })
   const [image] = useImage(`atom://${fileUrl}`, "anonymous")
-  const [dicomImage, setDicomImage] = useState<HTMLImageElement>(null)
   const [form] = Form.useForm()
+  const [modalFn, contextHolder] = Modal.useModal()
 
   useEffect(() => {
     if (!image) return
@@ -59,40 +60,6 @@ const DrawImage = () => {
     setOriginalnewAbnormalityLabelOptions,
   } = useOptionsStore(state => state)
 
-  const firstRender = useRef(true)
-
-  useEffect(() => {
-    if (!firstRender.current) return
-    window.ipc.on("readed-label-json", (data: any[], state) => {
-      setOriginalnewAbnormalityLabelOptions([
-        ...originalnewAbnormalityLabelOptions,
-        ...data,
-      ])
-      setLabelOptions([
-        ...labelOptions,
-        ...data?.map((item, index) => ({
-          label: (
-            <Badge
-              key={item}
-              color={
-                xtermColors[(labelOptions.length + index) % xtermColors.length]
-              }
-              text={item}
-            />
-          ),
-          value: item,
-          color:
-            xtermColors[(labelOptions.length + index) % xtermColors.length],
-        })),
-      ])
-      firstRender.current = false
-    })
-    window.ipc.send("read-json", {
-      fileName: "newAbnormalityNames",
-      folderName: "labels_data",
-    })
-  }, [])
-
   const handleSubmit = values => {
     console.log("Form Values:", values)
     console.log("currentPoints:", currentPoints, currentRect)
@@ -103,7 +70,15 @@ const DrawImage = () => {
       newAbnormalityName,
     ])
 
+    if (!fileDirectory) {
+      modalFn.warning({
+        title: "Warning",
+        content: "Please choose a folder first.",
+      })
+      return
+    }
     window.ipc.send("save-label-json", {
+      fileDirectory,
       data: [...originalnewAbnormalityLabelOptions, newAbnormalityName],
       fileName: "newAbnormalityNames",
       path: fileUrl,
@@ -164,11 +139,7 @@ const DrawImage = () => {
           onMouseMove={handleMouseMove}
         >
           <Layer>
-            <Image
-              width={size.width}
-              height={size.height}
-              image={image || dicomImage}
-            />
+            <Image width={size.width} height={size.height} image={image} />
             {Object.entries(methods).map(([key, value]) => (
               <Fragment key={key}>{value.render}</Fragment>
             ))}
@@ -200,6 +171,7 @@ const DrawImage = () => {
       >
         <InfoForm form={form} onFinish={handleSubmit} />
       </Modal>
+      {contextHolder}
     </>
   )
 }

@@ -1,13 +1,15 @@
-import { Button, Dropdown, MenuProps, Slider } from "antd"
+import { Button, Dropdown, MenuProps, Modal, Slider } from "antd"
 import { DownOutlined } from "@ant-design/icons"
 import { useBaseStore, useTableStore } from "../../lib/store"
 
 const ActionBar = () => {
+  const [modal, contextHolder] = Modal.useModal()
   const {
-    loading,
     setLoading,
     fileUrl,
     setFilesData,
+    fileDirectory,
+    setFileDirectory,
     setSelectMethod,
     imageBrightness,
     setImageBrightness,
@@ -24,27 +26,39 @@ const ActionBar = () => {
 
   const openDialogAndFetchFiles = async () => {
     setLoading(true)
-    window.ipc.on("selected-directory", (files: string[]) => {
-      setLoading(false)
-      setFilesData(
-        files.map((item: string) => ({
-          key: item,
-          path: item,
-          fileName: getFileNameFromPath(item),
-        }))
-      )
-    })
+    window.ipc.on(
+      "selected-directory",
+      (files: string[], outputDirectory: string) => {
+        setLoading(false)
+        setFileDirectory(outputDirectory)
+        setFilesData(
+          files.map((item: string) => ({
+            key: item,
+            path: item,
+            fileName: getFileNameFromPath(item),
+          }))
+        )
+      }
+    )
     window.ipc.send("open-directory-dialog", [])
   }
 
   const saveJson = async (values: any) => {
-    window.ipc.on("saved-image-json", message => {
-      console.log("🦄 ~ saveImageJson ~ message:", message)
-    })
+    if (!fileDirectory) {
+      modal.warning({
+        title: "Warning",
+        content: "Please choose a folder first.",
+      })
+      return
+    }
     window.ipc.send("save-image-json", {
+      fileDirectory,
       data: values,
       fileName: getFileNameFromPath(fileUrl),
       path: fileUrl,
+    })
+    window.ipc.on("saved-image-json", message => {
+      console.log("🦄 ~ saveImageJson ~ message:", message)
     })
   }
   const fileActionItems: MenuProps["items"] = [
@@ -123,6 +137,7 @@ const ActionBar = () => {
       >
         Reset
       </Button>
+      {contextHolder}
     </div>
   )
 }

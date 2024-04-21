@@ -18,6 +18,8 @@ export const useBaseStore = create<BaseState>(set => ({
   setHasImage: (hasImage: boolean) => set({ hasImage }),
   filesData: [],
   setFilesData: (filesData: any[]) => set({ filesData }),
+  fileDirectory: "",
+  setFileDirectory: (fileDirectory: string) => set({ fileDirectory }),
 
   selectMethod: "rectangle",
   setSelectMethod: (selectMethod: "rectangle" | "polygon") =>

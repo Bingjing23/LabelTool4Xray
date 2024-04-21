@@ -29,6 +29,8 @@ export type BaseState = {
   setHasImage: (hasImage: boolean) => void
   filesData: any[]
   setFilesData: (filesData: any[]) => void
+  fileDirectory: string
+  setFileDirectory: (fileDirectory: string) => void
 
   selectMethod: "rectangle" | "polygon"
   setSelectMethod: (selectMethod: "rectangle" | "polygon") => void
