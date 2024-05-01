@@ -9,4 +9,11 @@ files:
     filter:
       - package.json
       - app
+extraFiles:
+  - from: scripts/runner.bat
+    to: scripts/runner.bat
+  - from: scripts/runner.sh
+    to: scripts/runner.sh
+  - from: scripts/dist
+    to: scripts
 publish: null

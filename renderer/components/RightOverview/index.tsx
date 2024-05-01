@@ -30,7 +30,7 @@ const fileColumns: ColumnsType = [
     title: "File Name",
     dataIndex: "fileName",
     ellipsis: true,
-    align: "right",
+    align: "left",
   },
 ]
 
@@ -122,6 +122,7 @@ const RightOverview: React.FC = () => {
     setHasChanged,
     autoSave,
     setAutoSave,
+    setFileName,
     fileUrl,
     setFileUrl,
     setHasImage,
@@ -386,6 +387,7 @@ const RightOverview: React.FC = () => {
                   setHasChanged(false)
 
                   setFileUrl(record.path)
+                  setFileName(record.fileName?.split('.')?.[0])
                   setHasImage(true)
                   window.ipc.on("readed-image-json", (data: any[], state) => {
                     if (!data && record.path !== fileUrl) {

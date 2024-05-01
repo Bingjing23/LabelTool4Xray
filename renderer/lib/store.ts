@@ -18,6 +18,8 @@ export const useBaseStore = create<BaseState>(set => ({
   setHasSaved: (hasSaved: boolean) => set({ hasSaved }),
   autoSave: false,
   setAutoSave: (autoSave: boolean) => set({ autoSave }),
+  fileName: "Medical Image Annotation",
+  setFileName: (fileName: string) => set({ fileName }),
   fileUrl: "",
   setFileUrl: (fileUrl: string) => set({ fileUrl }),
   hasImage: false,

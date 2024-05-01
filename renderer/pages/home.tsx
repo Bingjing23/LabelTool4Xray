@@ -23,6 +23,8 @@ export default function HomePage() {
     }))
   )
 
+  const { fileName } = useBaseStore(state => state)
+
   const {
     labelOptions,
     setLabelOptions,
@@ -78,7 +80,7 @@ export default function HomePage() {
           <Spin size="large" spinning={loading}>
             <div>
               <Typography.Title level={2} className="mt-2">
-                Medical Image Annotation
+                {fileName}
               </Typography.Title>
               <div className="flex flex-col md:flex-row md:space-x-4">
                 <div className="md:w-3/4">

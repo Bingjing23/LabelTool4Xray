@@ -31,6 +31,8 @@ export type BaseState = {
   setAutoSave: (autoSave: boolean) => void
   fileUrl: string
   setFileUrl: (fileUrl: string) => void
+  fileName: string
+  setFileName: (fileName: string) => void
   hasImage: boolean
   setHasImage: (hasImage: boolean) => void
   filesData: any[]
