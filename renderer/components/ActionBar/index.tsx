@@ -104,17 +104,25 @@ const ActionBar = () => {
   return (
     <div className="mb-2 flex">
       <Dropdown menu={{ items: fileActionItems }} trigger={["click"]}>
-        <Button type="text">
+        <Button className="px-2" type="text">
           <div className="flex gap-2">
             Files
             <DownOutlined />
           </div>
         </Button>
       </Dropdown>
-      <Button type="text" onClick={() => setSelectMethod("rectangle")}>
+      <Button
+        className="px-2"
+        type="text"
+        onClick={() => setSelectMethod("rectangle")}
+      >
         Rectangle
       </Button>
-      <Button type="text" onClick={() => setSelectMethod("polygon")}>
+      <Button
+        className="px-2"
+        type="text"
+        onClick={() => setSelectMethod("polygon")}
+      >
         Polygon
       </Button>
       <div className="ml-4 flex gap-2 items-center">
