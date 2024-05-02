@@ -71,12 +71,8 @@ const ActionBar = () => {
 
   useKeyboardShortcut(["ctrl", "s"], handleSaveFile)
   useKeyboardShortcut(["meta", "s"], handleSaveFile)
-  useKeyboardShortcut(["ctrl", "alt", "r"], () =>
-    setSelectMethod("rectangle")
-  )
-  useKeyboardShortcut(["meta", "alt", "r"], () =>
-    setSelectMethod("rectangle")
-  )
+  useKeyboardShortcut(["ctrl", "alt", "r"], () => setSelectMethod("rectangle"))
+  useKeyboardShortcut(["meta", "alt", "r"], () => setSelectMethod("rectangle"))
   useKeyboardShortcut(["ctrl", "alt", "p"], () => setSelectMethod("polygon"))
   useKeyboardShortcut(["meta", "alt", "p"], () => setSelectMethod("polygon"))
 

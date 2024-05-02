@@ -79,7 +79,7 @@ export default function HomePage() {
         <div className="container mx-auto">
           <Spin size="large" spinning={loading}>
             <div>
-              <Typography.Title level={2} className="mt-2">
+              <Typography.Title level={2} className="mt-2 truncate">
                 {fileName}
               </Typography.Title>
               <div className="flex flex-col md:flex-row md:space-x-4">
