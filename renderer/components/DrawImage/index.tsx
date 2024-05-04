@@ -12,6 +12,10 @@ import {
   useTableStore,
 } from "../../lib/store"
 import { xtermColors } from "../InfoForm/colors"
+import ResizeObserverFC from "./ResizeObserver"
+
+const BASE_WIDTH = 752
+const BASE_HEIGHT = 720
 
 const DrawImage = () => {
   const {
@@ -24,21 +28,29 @@ const DrawImage = () => {
     imageContrast,
   } = useBaseStore(state => state)
   const [size, setSize] = useState<{ width: number; height: number }>({
-    width: 960,
-    height: 720,
+    width: BASE_WIDTH,
+    height: BASE_HEIGHT,
   })
   const [image] = useImage(`atom://${fileUrl}`, "anonymous")
   const [form] = Form.useForm()
   const [modalFn, contextHolder] = Modal.useModal()
+  const [resetSizeFlag, setResetSizeFlag] = useState(0)
 
   useEffect(() => {
     if (!image) return
     const imageWidth = image.width,
       imageHeight = image.height
     const scale = imageWidth / imageHeight
-    if (imageWidth > imageHeight) setSize({ width: 960, height: 960 / scale })
-    else setSize({ width: 720 * scale, height: 720 })
-  }, [image])
+    const currentInnerWidth =
+      document.querySelector("#stage")?.clientWidth || BASE_WIDTH
+    if (imageWidth > imageHeight)
+      setSize({ width: currentInnerWidth, height: currentInnerWidth / scale })
+    else
+      setSize({
+        width: currentInnerWidth * 0.9375 * scale,
+        height: currentInnerWidth * 0.9375,
+      })
+  }, [image, resetSizeFlag])
 
   const { rects: rectangles, setRects: setRectangles } = useRectsStore(
     state => state
@@ -78,15 +90,17 @@ const DrawImage = () => {
       })
       return
     }
-    window.ipc.send("save-label-json", {
-      fileDirectory,
-      data: [...originalnewAbnormalityLabelOptions, newAbnormalityName],
-      fileName: "newAbnormalityNames",
-      path: fileUrl,
-    })
-    window.ipc.on("saved-label-json", message => {
-      console.log("🦄 ~ saveLabelJson ~ message:", message)
-    })
+    if (newAbnormalityName) {
+      window.ipc.send("save-label-json", {
+        fileDirectory,
+        data: [...originalnewAbnormalityLabelOptions, newAbnormalityName],
+        fileName: "newAbnormalityNames",
+        path: fileUrl,
+      })
+      window.ipc.on("saved-label-json", message => {
+        console.log("🦄 ~ saveLabelJson ~ message:", message)
+      })
+    }
 
     setLabelOptions([
       ...labelOptions,
@@ -125,9 +139,14 @@ const DrawImage = () => {
   }
 
   return (
-    <>
+    <ResizeObserverFC
+      onResize={(width, height) => {
+        setResetSizeFlag(resetSizeFlag => resetSizeFlag + 1)
+      }}
+    >
       {hasImage && fileUrl ? (
         <Stage
+          id="stage"
           className="flex justify-center"
           style={{
             filter: `brightness(${imageBrightness / 100}) contrast(${
@@ -173,7 +192,7 @@ const DrawImage = () => {
         <InfoForm form={form} onFinish={handleSubmit} />
       </Modal>
       {contextHolder}
-    </>
+    </ResizeObserverFC>
   )
 }
 

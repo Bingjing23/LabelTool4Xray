@@ -1,7 +1,7 @@
 import { Button, Dropdown, MenuProps, Modal, Slider } from "antd"
 import { DownOutlined } from "@ant-design/icons"
 import { useBaseStore, useTableStore } from "../../lib/store"
-import { useKeyboardShortcut } from "../../lib/useKeyboardShortcut"
+import { useEffect } from "react"
 
 export const getFileNameFromPath = (path: string) => {
   // 正则表达式匹配最后一个斜杠后的所有字符
@@ -53,6 +53,20 @@ const ActionBar = () => {
       })
       return
     }
+
+    window.ipc.send("save-label-json", {
+      fileDirectory,
+      data: {
+        windowWidth: document.querySelector("#stage")?.clientWidth,
+        windowHeight: document.querySelector("#stage")?.clientHeight,
+      },
+      fileName: getFileNameFromPath(fileUrl) + "_windowSize",
+      path: fileUrl,
+    })
+    window.ipc.on("saved-label-json", message => {
+      console.log("🦄 ~ saveSizeJson ~ message:", message)
+    })
+
     window.ipc.send("save-image-json", {
       fileDirectory,
       data: values,
@@ -69,12 +83,37 @@ const ActionBar = () => {
     saveJson(tableDataSource)
   }
 
-  useKeyboardShortcut(["ctrl", "s"], handleSaveFile)
-  useKeyboardShortcut(["meta", "s"], handleSaveFile)
-  useKeyboardShortcut(["ctrl", "alt", "r"], () => setSelectMethod("rectangle"))
-  useKeyboardShortcut(["meta", "alt", "r"], () => setSelectMethod("rectangle"))
-  useKeyboardShortcut(["ctrl", "alt", "p"], () => setSelectMethod("polygon"))
-  useKeyboardShortcut(["meta", "alt", "p"], () => setSelectMethod("polygon"))
+  useEffect(() => {
+    if (!fileDirectory) return
+    window.ipc.on("choose rectangle", () => {
+      setSelectMethod("rectangle")
+    })
+    window.ipc.on("choose polygon", () => {
+      setSelectMethod("polygon")
+    })
+    window.ipc.on("save file", () => {
+      handleSaveFile()
+    })
+  }, [fileDirectory])
+
+  useEffect(() => {
+    window.ipc.on(
+      "outputExists",
+      async (params: {
+        directoryPath: string
+        outputDirectoryPath: string
+      }) => {
+        const confirmed = await modal.confirm({
+          title: "Warning",
+          content:
+            "The output folder already exists. Do you want to overwrite it?",
+          okText: "Yes",
+          cancelText: "No",
+        })
+        window.ipc.send("confirm-output-exists", { confirmed, ...params })
+      }
+    )
+  }, [])
 
   const fileActionItems: MenuProps["items"] = [
     {

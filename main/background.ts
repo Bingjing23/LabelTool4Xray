@@ -7,6 +7,22 @@ import { createWindow } from "./helpers"
 import { platform } from "process"
 import util from "util"
 
+const getRealWidth: (number: number) => number = width => {
+  if (width < 640) return width
+  else if (width < 768) return 640
+  else if (width < 1024) return 768
+  else if (width < 1280) return 1024
+  else if (width < 1536) return 1280
+  else return 1536
+}
+
+const isImageFile = (fileName: string) => {
+  const lowerCaseFileName = fileName.toLowerCase()
+  return [".jpg", ".jpeg", ".png", ".bmp", ".webp", ".tif", ".tiff"].some(ext =>
+    lowerCaseFileName.endsWith(ext)
+  )
+}
+
 const isProd = process.env.NODE_ENV === "production"
 
 if (isProd) {
@@ -30,6 +46,93 @@ if (isProd) {
     },
   })
 
+  app.on("browser-window-focus", function () {
+    globalShortcut.register("CommandOrControl+R", () => {
+      console.log("CommandOrControl+R is pressed: Shortcut Disabled")
+      mainWindow.webContents.send("choose rectangle")
+    })
+    globalShortcut.register("CommandOrControl+P", () => {
+      console.log("CommandOrControl+P is pressed: Shortcut Disabled")
+      mainWindow.webContents.send("choose polygon")
+    })
+    globalShortcut.register("CommandOrControl+S", () => {
+      console.log("CommandOrControl+S is pressed: Shortcut Disabled")
+      mainWindow.webContents.send("save file")
+    })
+  })
+
+  app.on("browser-window-blur", function () {
+    globalShortcut.unregister("CommandOrControl+R")
+    globalShortcut.unregister("CommandOrControl+P")
+    globalShortcut.unregister("CommandOrControl+S")
+  })
+
+  let lastSize = [getRealWidth(1200), 900]
+  mainWindow.on("resize", () => {
+    const newSize = mainWindow.getSize()
+    let scaleX = getRealWidth(newSize[0]) / getRealWidth(lastSize[0])
+    scaleX = Math.abs(Number(scaleX.toFixed(3)) - 1) <= 0.002 ? 1 : scaleX
+    let scaleY = newSize[1] / lastSize[1]
+    scaleY = Math.abs(Number(scaleY.toFixed(3)) - 1) <= 0.002 ? 1 : scaleY
+    mainWindow.webContents.send("resize", { scaleX, scaleY })
+    lastSize = newSize
+  })
+
+  ipcMain.on("open-directory-dialog", event => {
+    dialog
+      .showOpenDialog({
+        properties: ["openDirectory"],
+      })
+      .then(async result => {
+        console.log("🦄 ~ startProcess ~ platform:", platform)
+        if (!result.canceled && result.filePaths.length > 0) {
+          const directoryPath = result.filePaths[0]
+          const outputDirectoryPath = path.join(
+            path.dirname(directoryPath),
+            `${path.basename(directoryPath)}_output`
+          )
+          if (fs.existsSync(outputDirectoryPath)) {
+            mainWindow.webContents.send("outputExists", {
+              directoryPath,
+              outputDirectoryPath,
+            })
+          } else {
+            await startProcess(directoryPath)
+            const convertedDirectoryPath = path.join(
+              outputDirectoryPath,
+              `${path.basename(directoryPath)}_preprocessing`
+            )
+            fs.readdir(convertedDirectoryPath, (err, files) => {
+              if (err) {
+                console.error("Error fetching files:", err)
+                event.reply("selected-directory", [])
+                return
+              }
+
+              const filteredImageFiles = files
+                .filter(file => {
+                  return isImageFile(path.extname(file))
+                })
+                .map(file => path.join(convertedDirectoryPath, file))
+
+              event.reply(
+                "selected-directory",
+                filteredImageFiles,
+                outputDirectoryPath
+              )
+            })
+          }
+        }
+        if (result.canceled) {
+          event.reply("selected-directory", [])
+        }
+      })
+      .catch(err => {
+        event.reply("selected-directory", [])
+        console.error("Error opening dialog:", err)
+      })
+  })
+
   protocol.handle("atom", (request: any) => {
     return net.fetch("file://" + request.url.slice("atom://".length))
   })
@@ -46,16 +149,6 @@ if (isProd) {
 app.on("window-all-closed", () => {
   app.quit()
 })
-
-// app.on("browser-window-focus", function () {
-//   globalShortcut.register("CommandOrControl+R", () => {
-//     console.log("CommandOrControl+R is pressed: Shortcut Disabled")
-//   })
-// })
-
-// app.on("browser-window-blur", function () {
-//   globalShortcut.unregister("CommandOrControl+R")
-// })
 
 async function startProcess(value: any) {
   if (value) {
@@ -106,57 +199,35 @@ const LABEL_FOLDER_NAME = "labels_data"
 //   fs.mkdirSync(folderPath)
 // }
 
-const isImageFile = (fileName: string) => {
-  const lowerCaseFileName = fileName.toLowerCase()
-  return [".jpg", ".jpeg", ".png", ".bmp", ".webp", ".tif", ".tiff"].some(ext =>
-    lowerCaseFileName.endsWith(ext)
-  )
-}
-
-ipcMain.on("open-directory-dialog", event => {
-  dialog
-    .showOpenDialog({
-      properties: ["openDirectory"],
-    })
-    .then(async result => {
-      console.log("🦄 ~ startProcess ~ platform:", platform)
-      if (!result.canceled && result.filePaths.length > 0) {
-        const directoryPath = result.filePaths[0]
-        await startProcess(directoryPath)
-        const outputDirectoryPath = path.join(
-          path.dirname(directoryPath),
-          `${path.basename(directoryPath)}_output`
-        )
-        const convertedDirectoryPath = path.join(
-          outputDirectoryPath,
-          `${path.basename(directoryPath)}_preprocessing`
-        )
-        fs.readdir(convertedDirectoryPath, (err, files) => {
-          if (err) {
-            console.error("Error fetching files:", err)
-            event.reply("selected-directory", [])
-            return
-          }
-
-          const filteredImageFiles = files
-            .filter(file => {
-              return isImageFile(path.extname(file))
-            })
-            .map(file => path.join(convertedDirectoryPath, file))
-
-          event.reply(
-            "selected-directory",
-            filteredImageFiles,
-            outputDirectoryPath
-          )
-        })
+ipcMain.on("confirm-output-exists", async (event, params) => {
+  const { confirmed, directoryPath, outputDirectoryPath } = params
+  const readFiles = () => {
+    const convertedDirectoryPath = path.join(
+      outputDirectoryPath,
+      `${path.basename(directoryPath)}_preprocessing`
+    )
+    fs.readdir(convertedDirectoryPath, (err, files) => {
+      if (err) {
+        console.error("Error fetching files:", err)
+        event.reply("selected-directory", [])
+        return
       }
-      event.reply("selected-directory", [])
+
+      const filteredImageFiles = files
+        .filter(file => {
+          return isImageFile(path.extname(file))
+        })
+        .map(file => path.join(convertedDirectoryPath, file))
+
+      event.reply("selected-directory", filteredImageFiles, outputDirectoryPath)
     })
-    .catch(err => {
-      event.reply("selected-directory", [])
-      console.error("Error opening dialog:", err)
-    })
+  }
+  if (confirmed) {
+    await startProcess(directoryPath)
+    readFiles()
+  } else {
+    readFiles()
+  }
 })
 
 ipcMain.on(
@@ -234,13 +305,17 @@ ipcMain.on(
       if (folderName === "images_data") {
         event.reply("readed-image-json", JSON.parse(data), "success")
       } else if (folderName === "labels_data") {
-        event.reply("readed-label-json", JSON.parse(data), "success")
+        if (fileName === "newAbnormalityName")
+          event.reply("readed-label-json", JSON.parse(data), "success")
+        else event.reply("readed-size-json", JSON.parse(data), "success")
       }
     } catch (err) {
       if (folderName === "images_data") {
         event.reply("readed-image-json", [], "error")
       } else if (folderName === "labels_data") {
-        event.reply("readed-label-json", [], "error")
+        if (fileName === "newAbnormalityName")
+          event.reply("readed-label-json", [], "error")
+        else event.reply("readed-size-json", [], "error")
       }
     }
   }
