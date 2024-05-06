@@ -94,6 +94,11 @@ const ActionBar = () => {
     window.ipc.on("save file", () => {
       handleSaveFile()
     })
+    return () => {
+      window.ipc.remove("choose rectangle")
+      window.ipc.remove("choose polygon")
+      window.ipc.remove("save file")
+    }
   }, [fileDirectory])
 
   useEffect(() => {
@@ -113,6 +118,9 @@ const ActionBar = () => {
         window.ipc.send("confirm-output-exists", { confirmed, ...params })
       }
     )
+    return () => {
+      window.ipc.remove("outputExists")
+    }
   }, [])
 
   const fileActionItems: MenuProps["items"] = [

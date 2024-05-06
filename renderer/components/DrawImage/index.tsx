@@ -1,18 +1,14 @@
 import { Badge, Empty, Form, Modal } from "antd"
-import React, { Fragment, useEffect, useState } from "react"
+import React, { Fragment, useContext, useEffect, useRef, useState } from "react"
 import { v4 as uuidv4 } from "uuid"
 import { Stage, Layer, Image } from "react-konva"
 import useImage from "use-image"
 import InfoForm, { useOptionsStore } from "../InfoForm"
 import useSelectMethodFuncs from "./useSelectMethodFuncs"
-import {
-  useBaseStore,
-  usePolygonStore,
-  useRectsStore,
-  useTableStore,
-} from "../../lib/store"
+import { useBaseStore, useTableStore } from "../../lib/store"
 import { xtermColors } from "../InfoForm/colors"
 import ResizeObserverFC from "./ResizeObserver"
+import { GraphicDataContext } from "../GraphicDataProvider"
 
 const BASE_WIDTH = 752
 const BASE_HEIGHT = 720
@@ -35,6 +31,19 @@ const DrawImage = () => {
   const [form] = Form.useForm()
   const [modalFn, contextHolder] = Modal.useModal()
   const [resetSizeFlag, setResetSizeFlag] = useState(0)
+  const setOnceRef = useRef(false)
+  const [lastSize, setLastSize] = useState([])
+  const [currentSize, setCurrentSize] = useState([])
+  const {
+    rects,
+    dispatchRects,
+    polygons,
+    dispatchPolygons,
+    storedWindowWidth,
+    setStoredWindowWidth,
+    storedWindowHeight,
+    setStoredWindowHeight,
+  } = useContext(GraphicDataContext)
 
   useEffect(() => {
     if (!image) return
@@ -43,19 +52,112 @@ const DrawImage = () => {
     const scale = imageWidth / imageHeight
     const currentInnerWidth =
       document.querySelector("#stage")?.clientWidth || BASE_WIDTH
-    if (imageWidth > imageHeight)
-      setSize({ width: currentInnerWidth, height: currentInnerWidth / scale })
-    else
+    if (imageWidth > imageHeight) {
+      const width = currentInnerWidth
+      const height = currentInnerWidth / scale
+      setSize({ width, height })
+      if (!setOnceRef.current) {
+        setOnceRef.current = true
+        setLastSize([width, height])
+      } else {
+        if (lastSize[0] !== width || lastSize[1] !== height) {
+          setCurrentSize([width, height])
+        }
+      }
+    } else {
+      const width = currentInnerWidth * 0.9375 * scale
+      const height = currentInnerWidth * 0.9375
       setSize({
-        width: currentInnerWidth * 0.9375 * scale,
-        height: currentInnerWidth * 0.9375,
+        width,
+        height,
       })
+      if (!setOnceRef.current) {
+        setOnceRef.current = true
+        setLastSize([width, height])
+      } else {
+        if (lastSize[0] !== width || lastSize[1] !== height) {
+          setCurrentSize([width, height])
+        }
+      }
+    }
   }, [image, resetSizeFlag])
 
-  const { rects: rectangles, setRects: setRectangles } = useRectsStore(
-    state => state
-  )
-  const { polygons, setPolygons } = usePolygonStore(state => state)
+  useEffect(() => {
+    if (!lastSize.length || !currentSize.length) return
+    let scaleX = currentSize[0] / lastSize[0]
+    scaleX = Math.abs(Number(scaleX.toFixed(3)) - 1) <= 0.002 ? 1 : scaleX
+    let scaleY = currentSize[1] / lastSize[1]
+    scaleY = Math.abs(Number(scaleY.toFixed(3)) - 1) <= 0.002 ? 1 : scaleY
+    if (scaleX !== 1 || scaleY !== 1) {
+      dispatchRects({
+        type: "setRects",
+        rects: rects.map(rect => ({
+          ...rect,
+          x: rect.x * scaleX,
+          y: rect.y * scaleY,
+          width: rect.width * scaleX,
+          height: rect.height * scaleY,
+        })),
+      })
+      dispatchPolygons({
+        type: "setPolygons",
+        polygons: polygons.map(pts => ({
+          ...pts,
+          points: pts.points.map(p => p * (scaleX === 1 ? scaleY : scaleX)),
+        })),
+      })
+    }
+    setLastSize(currentSize)
+  }, [rects, polygons, currentSize])
+
+  useEffect(() => {
+    if (!lastSize.length || !currentSize.length) return
+
+    // 只有当 currentSize 真正变化时才更新 lastSize
+    if (lastSize[0] !== currentSize[0] || lastSize[1] !== currentSize[1]) {
+      setLastSize(currentSize)
+    }
+  }, [currentSize])
+
+  useEffect(() => {
+    if (!storedWindowWidth || !storedWindowHeight || !lastSize.length) return
+    let scaleX = lastSize[0] / storedWindowWidth
+    scaleX = Math.abs(Number(scaleX.toFixed(3)) - 1) <= 0.002 ? 1 : scaleX
+    let scaleY = lastSize[1] / storedWindowHeight
+    scaleY = Math.abs(Number(scaleY.toFixed(3)) - 1) <= 0.002 ? 1 : scaleY
+
+    if (scaleX !== 1 || scaleY !== 1) {
+      dispatchRects({
+        type: "setRects",
+        rects: rects.map(rect => ({
+          ...rect,
+          x: rect.x * scaleX,
+          y: rect.y * scaleY,
+          width: rect.width * scaleX,
+          height: rect.height * scaleY,
+        })),
+      })
+      dispatchPolygons({
+        type: "setPolygons",
+        polygons: polygons.map(pts => ({
+          ...pts,
+          points: pts.points.map(p => p * (scaleX === 1 ? scaleY : scaleX)),
+        })),
+      })
+    }
+    setStoredWindowWidth(0)
+    setStoredWindowHeight(0)
+  }, [storedWindowWidth, storedWindowHeight, lastSize])
+
+  useEffect(() => {
+    window.ipc.on("saved-label-json", message => {
+      console.log("🦄 ~ saveLabelJson ~ message:", message)
+    })
+    return () => {
+      window.ipc.remove("saved-label-json")
+    }
+  }, [])
+
   const { addTableDataSource } = useTableStore(state => state)
 
   const { modal, methods } = useSelectMethodFuncs()
@@ -93,12 +195,12 @@ const DrawImage = () => {
     if (newAbnormalityName) {
       window.ipc.send("save-label-json", {
         fileDirectory,
-        data: [...originalnewAbnormalityLabelOptions, newAbnormalityName],
+        data: [
+          ...originalnewAbnormalityLabelOptions,
+          newAbnormalityName,
+        ].filter(Boolean),
         fileName: "newAbnormalityNames",
         path: fileUrl,
-      })
-      window.ipc.on("saved-label-json", message => {
-        console.log("🦄 ~ saveLabelJson ~ message:", message)
       })
     }
 
@@ -181,10 +283,13 @@ const DrawImage = () => {
         onCancel={() => {
           setModalOpen(false)
           if (selectMethod === "rectangle") {
-            setRectangles(rectangles.slice(0, -1))
+            dispatchRects({ type: "setRects", rects: rects.slice(0, -1) })
             setCurrentRect(null)
           } else if (selectMethod === "polygon") {
-            setPolygons(polygons.slice(0, -1))
+            dispatchPolygons({
+              type: "setPolygons",
+              polygons: polygons.slice(0, -1),
+            })
             setCurrentPoints(null)
           }
         }}

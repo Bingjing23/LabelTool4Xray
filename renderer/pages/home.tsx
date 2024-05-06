@@ -8,6 +8,7 @@ import { useBaseStore } from "../lib/store"
 import { useShallow } from "zustand/react/shallow"
 import { useOptionsStore } from "../components/InfoForm"
 import { xtermColors } from "../components/InfoForm/colors"
+import GraphicDataProvider from "../components/GraphicDataProvider"
 
 const { Content } = Layout
 
@@ -67,6 +68,9 @@ export default function HomePage() {
         })),
       ])
     })
+    return () => {
+      window.ipc.remove("readed-label-json")
+    }
   }, [fileDirectory])
 
   return (
@@ -82,15 +86,17 @@ export default function HomePage() {
               <Typography.Title level={2} className="mt-2 truncate">
                 {fileName}
               </Typography.Title>
-              <div className="flex flex-col md:flex-row md:space-x-4">
-                <div className="md:w-3/4">
-                  <ActionBar />
-                  <DrawImage />
+              <GraphicDataProvider>
+                <div className="flex flex-col md:flex-row md:space-x-4">
+                  <div className="md:w-3/4">
+                    <ActionBar />
+                    <DrawImage />
+                  </div>
+                  <div className="md:w-1/4">
+                    <RightOverview />
+                  </div>
                 </div>
-                <div className="md:w-1/4">
-                  <RightOverview />
-                </div>
-              </div>
+              </GraphicDataProvider>
             </div>
           </Spin>
         </div>

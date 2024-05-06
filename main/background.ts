@@ -7,15 +7,6 @@ import { createWindow } from "./helpers"
 import { platform } from "process"
 import util from "util"
 
-const getRealWidth: (number: number) => number = width => {
-  if (width < 640) return width
-  else if (width < 768) return 640
-  else if (width < 1024) return 768
-  else if (width < 1280) return 1024
-  else if (width < 1536) return 1280
-  else return 1536
-}
-
 const isImageFile = (fileName: string) => {
   const lowerCaseFileName = fileName.toLowerCase()
   return [".jpg", ".jpeg", ".png", ".bmp", ".webp", ".tif", ".tiff"].some(ext =>
@@ -65,17 +56,6 @@ if (isProd) {
     globalShortcut.unregister("CommandOrControl+R")
     globalShortcut.unregister("CommandOrControl+P")
     globalShortcut.unregister("CommandOrControl+S")
-  })
-
-  let lastSize = [getRealWidth(1200), 900]
-  mainWindow.on("resize", () => {
-    const newSize = mainWindow.getSize()
-    let scaleX = getRealWidth(newSize[0]) / getRealWidth(lastSize[0])
-    scaleX = Math.abs(Number(scaleX.toFixed(3)) - 1) <= 0.002 ? 1 : scaleX
-    let scaleY = newSize[1] / lastSize[1]
-    scaleY = Math.abs(Number(scaleY.toFixed(3)) - 1) <= 0.002 ? 1 : scaleY
-    mainWindow.webContents.send("resize", { scaleX, scaleY })
-    lastSize = newSize
   })
 
   ipcMain.on("open-directory-dialog", event => {

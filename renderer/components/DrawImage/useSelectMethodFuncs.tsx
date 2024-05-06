@@ -1,7 +1,7 @@
-import { useState } from "react"
-import { Circle, Line, Rect } from "react-konva"
+import { useContext, useState } from "react"
+import { Line, Rect } from "react-konva"
 import { v4 as uuidv4 } from "uuid"
-import { usePolygonStore, useRectsStore } from "../../lib/store"
+import { GraphicDataContext } from "../GraphicDataProvider"
 
 const useSelectMethodFuncs = () => {
   const [drawing, setDrawing] = useState(false)
@@ -13,11 +13,8 @@ const useSelectMethodFuncs = () => {
     id: string
     isHighlighted: boolean
   }>(null)
-  const { rects: rectangles, setRects: setRectangles } = useRectsStore(
-    state => state
-  )
-
-  const { polygons, setPolygons } = usePolygonStore(state => state)
+  const { rects, dispatchRects, polygons, dispatchPolygons } =
+    useContext(GraphicDataContext)
   const [currentPoints, setCurrentPoints] = useState<{
     points: number[]
     id: string
@@ -56,7 +53,7 @@ const useSelectMethodFuncs = () => {
             setDrawing(true)
           } else {
             setDrawing(false)
-            setRectangles([...rectangles, currentRect])
+            dispatchRects({ type: "setRects", rects: [...rects, currentRect] })
 
             setModalOpen(true)
           }
@@ -76,7 +73,7 @@ const useSelectMethodFuncs = () => {
         },
         render: (
           <>
-            {rectangles.map((rect, i) => (
+            {rects.map((rect, i) => (
               <Rect
                 key={i}
                 {...rect}
@@ -95,6 +92,7 @@ const useSelectMethodFuncs = () => {
         ),
         currentRect,
         setCurrentRect,
+        rects,
       },
       polygon: {
         handleMouseDown: e => {
@@ -110,7 +108,10 @@ const useSelectMethodFuncs = () => {
           } else {
             if (checkIfCloseToFirstPoint(point)) {
               setDrawing(false)
-              setPolygons([...polygons, currentPoints])
+              dispatchPolygons({
+                type: "setPolygons",
+                polygons: [...polygons, currentPoints],
+              })
               setModalOpen(true)
             } else {
               setCurrentPoints({
@@ -121,16 +122,6 @@ const useSelectMethodFuncs = () => {
           }
         },
         handleMouseMove: () => {},
-        // handleDblclick: e => {
-        //   if (currentPoints.length > 6) {
-        //     setPolygons([
-        //       ...polygons,
-        //       { points: currentPoints, id: uuidv4(), isHighlighted: false },
-        //     ])
-        //     setCurrentPoints([])
-        //     setDrawing(false)
-        //   }
-        // },
         render: (
           <>
             {polygons.map((pt, index) => (

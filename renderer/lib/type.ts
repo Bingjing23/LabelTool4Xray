@@ -49,14 +49,6 @@ export type BaseState = {
   setImageContrast: (imageContrast: number) => void
 }
 
-export type RectState = {
-  rects: Rect[]
-  addRect: (rect: Rect) => void
-  setRects: (rects: Rect[]) => void
-  editRectById: (id: string, rect: Partial<Rect>) => void
-  removeRectById: (i: string) => void
-}
-
 export type Polygon = {
   points: number[]
   id: string
@@ -66,14 +58,6 @@ export type Polygon = {
 export type PolygonData = Medical & {
   rowId: string
   polygon: Polygon
-}
-
-export type PolygonState = {
-  polygons: Polygon[]
-  addPolygon: (polygon: Polygon) => void
-  setPolygons: (polygons: Polygon[]) => void
-  editPolygonById: (id: string, polygon: Partial<Polygon>) => void
-  removePolygonById: (id: string) => void
 }
 
 export type TableState = {

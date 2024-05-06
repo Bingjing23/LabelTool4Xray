@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useContext, useEffect, useMemo, useState } from "react"
 import { Badge, Button, Card, Modal, Space, Table } from "antd"
 import { ColumnType, ColumnsType } from "antd/es/table"
 import {
@@ -9,13 +9,9 @@ import {
 import Image from "next/image"
 import LeftArrow from "../../public/svg/Left.svg"
 import RightArrow from "../../public/svg/Right.svg"
-import {
-  useBaseStore,
-  usePolygonStore,
-  useRectsStore,
-  useTableStore,
-} from "../../lib/store"
+import { useBaseStore, useTableStore } from "../../lib/store"
 import { getFileNameFromPath } from "../ActionBar"
+import { GraphicDataContext } from "../GraphicDataProvider"
 
 const fileColumns: ColumnsType = [
   {
@@ -102,17 +98,40 @@ const RightOverview: React.FC = () => {
     [labelOptions, anatomicalRegionsOptions]
   )
 
-  const { rects, removeRectById, editRectById, setRects } = useRectsStore(
-    state => state
-  )
-  const { polygons, removePolygonById, editPolygonById, setPolygons } =
-    usePolygonStore(state => state)
+  const {
+    dispatchRects,
+    dispatchPolygons,
+    setStoredWindowWidth,
+    setStoredWindowHeight,
+  } = useContext(GraphicDataContext)
   const {
     removeTableDataSourceByIndex,
     editTableDataSourceByRowId,
     setTableDataSource,
     tableDataSource,
   } = useTableStore(state => state)
+
+  useEffect(() => {
+    window.ipc.on("saved-label-json", message => {
+      console.log("🦄 ~ saveSizeJson ~ message:", message)
+      window.ipc.on("saved-image-json", message => {
+        console.log("🦄 ~ saveImageJson ~ message:", message)
+      })
+    })
+    window.ipc.on(
+      "readed-size-json",
+      (data: { windowWidth: number; windowHeight: number }) => {
+        setStoredWindowWidth(data.windowWidth)
+        setStoredWindowHeight(data.windowHeight)
+      }
+    )
+    return () => {
+      window.ipc.remove("readed-image-json")
+      window.ipc.remove("readed-size-json")
+      window.ipc.remove("saved-image-json")
+      window.ipc.remove("saved-label-json")
+    }
+  }, [])
 
   const {
     hasSaved,
@@ -141,9 +160,12 @@ const RightOverview: React.FC = () => {
         onClick={e => {
           e.stopPropagation()
           if (record?.rect) {
-            removeRectById(record.rect.id)
+            dispatchRects({ type: "removeRectById", id: record.rect.id })
           } else if (record?.polygon) {
-            removePolygonById(record.polygon.id)
+            dispatchPolygons({
+              type: "removePolygonById",
+              id: record.polygon.id,
+            })
           }
           removeTableDataSourceByIndex(index)
           setHasChanged(true)
@@ -157,27 +179,6 @@ const RightOverview: React.FC = () => {
   const [modal, contextHolder] = Modal.useModal()
   const [choosedAutoSave, setChoosedAutoSave] = useState(false)
 
-  useEffect(() => {
-    window.ipc.on("resize", (data: { scaleX: number; scaleY: number }) => {
-      const { scaleX, scaleY } = data
-      setRects(
-        rects.map(rect => ({
-          ...rect,
-          x: rect.x * scaleX,
-          y: rect.y * scaleY,
-          width: rect.width * scaleX,
-          height: rect.height * scaleY,
-        }))
-      )
-      setPolygons(
-        polygons.map(pts => ({
-          ...pts,
-          points: pts.points.map(p => p * (scaleX === 1 ? scaleY : scaleX)),
-        }))
-      )
-    })
-  }, [rects, polygons])
-
   const saveJson = () => {
     window.ipc.send("save-label-json", {
       fileDirectory,
@@ -188,18 +189,12 @@ const RightOverview: React.FC = () => {
       fileName: getFileNameFromPath(fileUrl) + "_windowSize",
       path: fileUrl,
     })
-    window.ipc.on("saved-label-json", message => {
-      console.log("🦄 ~ saveSizeJson ~ message:", message)
-    })
 
     window.ipc.send("save-image-json", {
       fileDirectory,
       data: tableDataSource,
       fileName: getFileNameFromPath(fileUrl),
       path: fileUrl,
-    })
-    window.ipc.on("saved-image-json", message => {
-      console.log("🦄 ~ saveImageJson ~ message:", message)
     })
   }
 
@@ -251,8 +246,13 @@ const RightOverview: React.FC = () => {
                 onClick: e => {
                   console.log(e, record)
                   if (record?.rect) {
-                    editRectById(record.rect.id, {
-                      isHighlighted: !record.rect.isHighlighted,
+                    dispatchRects({
+                      type: "editRectById",
+                      id: record.rect.id,
+                      rect: {
+                        ...record.rect,
+                        isHighlighted: !record.rect.isHighlighted,
+                      },
                     })
                     editTableDataSourceByRowId(record.rowId, {
                       rect: {
@@ -261,8 +261,13 @@ const RightOverview: React.FC = () => {
                       },
                     })
                   } else if (record?.polygon) {
-                    editPolygonById(record.polygon.id, {
-                      isHighlighted: !record.polygon.isHighlighted,
+                    dispatchPolygons({
+                      type: "editPolygonById",
+                      id: record.polygon.id,
+                      polygon: {
+                        ...record.polygon,
+                        isHighlighted: !record.polygon.isHighlighted,
+                      },
                     })
                     editTableDataSourceByRowId(record.rowId, {
                       polygon: {
@@ -328,8 +333,8 @@ const RightOverview: React.FC = () => {
                     window.ipc.on("readed-image-json", (data: any[]) => {
                       if (!data) {
                         setTableDataSource([])
-                        setRects([])
-                        setPolygons([])
+                        dispatchRects({ type: "setRects", rects: [] })
+                        dispatchPolygons({ type: "setPolygons", polygons: [] })
                       } else {
                         setTableDataSource(data)
                         const rects =
@@ -342,47 +347,14 @@ const RightOverview: React.FC = () => {
                             ?.filter(item => item?.polygon)
                             ?.map(item => item.polygon) || []
 
-                        setRects(rects)
-                        setPolygons(polygons)
+                        dispatchRects({ type: "setRects", rects })
+                        dispatchPolygons({ type: "setPolygons", polygons })
 
                         window.ipc.send("read-json", {
                           fileDirectory,
                           fileName: previousFile.fileName + "_windowSize",
                           folderName: "labels_data",
                         })
-                        window.ipc.on(
-                          "readed-size-json",
-                          (data: {
-                            windowWidth: number
-                            windowHeight: number
-                          }) => {
-                            const currentWindowWidth =
-                              document.querySelector("#stage")?.clientWidth
-                            const currentWindowHeight =
-                              document.querySelector("#stage")?.clientHeight
-                            const scaleX = currentWindowWidth / data.windowWidth
-                            const scaleY =
-                              currentWindowHeight / data.windowHeight
-
-                            setRects(
-                              rects.map(rect => ({
-                                ...rect,
-                                x: rect.x * scaleX,
-                                y: rect.y * scaleY,
-                                width: rect.width * scaleX,
-                                height: rect.height * scaleY,
-                              }))
-                            )
-                            setPolygons(
-                              polygons.map(pts => ({
-                                ...pts,
-                                points: pts.points.map(
-                                  p => p * (scaleX === 1 ? scaleY : scaleX)
-                                ),
-                              }))
-                            )
-                          }
-                        )
                       }
                     })
                   }}
@@ -420,8 +392,8 @@ const RightOverview: React.FC = () => {
                     window.ipc.on("readed-image-json", (data: any[]) => {
                       if (!data) {
                         setTableDataSource([])
-                        setRects([])
-                        setPolygons([])
+                        dispatchRects({ type: "setRects", rects: [] })
+                        dispatchPolygons({ type: "setPolygons", polygons: [] })
                       } else {
                         setTableDataSource(data)
                         const rects =
@@ -432,8 +404,8 @@ const RightOverview: React.FC = () => {
                           data
                             ?.filter(item => item?.polygon)
                             ?.map(item => item.polygon) || []
-                        setRects(rects)
-                        setPolygons(polygons)
+                        dispatchRects({ type: "setRects", rects })
+                        dispatchPolygons({ type: "setPolygons", polygons })
 
                         window.ipc.send("read-json", {
                           fileDirectory,
@@ -446,31 +418,8 @@ const RightOverview: React.FC = () => {
                             windowWidth: number
                             windowHeight: number
                           }) => {
-                            const currentWindowWidth =
-                              document.querySelector("#stage")?.clientWidth
-                            const currentWindowHeight =
-                              document.querySelector("#stage")?.clientHeight
-                            const scaleX = currentWindowWidth / data.windowWidth
-                            const scaleY =
-                              currentWindowHeight / data.windowHeight
-
-                            setRects(
-                              rects.map(rect => ({
-                                ...rect,
-                                x: rect.x * scaleX,
-                                y: rect.y * scaleY,
-                                width: rect.width * scaleX,
-                                height: rect.height * scaleY,
-                              }))
-                            )
-                            setPolygons(
-                              polygons.map(pts => ({
-                                ...pts,
-                                points: pts.points.map(
-                                  p => p * (scaleX === 1 ? scaleY : scaleX)
-                                ),
-                              }))
-                            )
+                            setStoredWindowWidth(data.windowWidth)
+                            setStoredWindowHeight(data.windowHeight)
                           }
                         )
                       }
@@ -513,8 +462,8 @@ const RightOverview: React.FC = () => {
                   window.ipc.on("readed-image-json", (data: any[]) => {
                     if (!data && record.path !== fileUrl) {
                       setTableDataSource([])
-                      setRects([])
-                      setPolygons([])
+                      dispatchRects({ type: "setRects", rects: [] })
+                      dispatchPolygons({ type: "setPolygons", polygons: [] })
                     } else {
                       setTableDataSource(data)
                       const rects =
@@ -527,8 +476,8 @@ const RightOverview: React.FC = () => {
                           ?.filter(item => item?.polygon)
                           ?.map(item => item.polygon) || []
 
-                      setRects(rects)
-                      setPolygons(polygons)
+                      dispatchRects({ type: "setRects", rects })
+                      dispatchPolygons({ type: "setPolygons", polygons })
 
                       window.ipc.send("read-json", {
                         fileDirectory,
@@ -541,30 +490,8 @@ const RightOverview: React.FC = () => {
                           windowWidth: number
                           windowHeight: number
                         }) => {
-                          const currentWindowWidth =
-                            document.querySelector("#stage")?.clientWidth
-                          const currentWindowHeight =
-                            document.querySelector("#stage")?.clientHeight
-                          const scaleX = currentWindowWidth / data.windowWidth
-                          const scaleY = currentWindowHeight / data.windowHeight
-
-                          setRects(
-                            rects.map(rect => ({
-                              ...rect,
-                              x: rect.x * scaleX,
-                              y: rect.y * scaleY,
-                              width: rect.width * scaleX,
-                              height: rect.height * scaleY,
-                            }))
-                          )
-                          setPolygons(
-                            polygons.map(pts => ({
-                              ...pts,
-                              points: pts.points.map(
-                                p => p * (scaleX === 1 ? scaleY : scaleX)
-                              ),
-                            }))
-                          )
+                          setStoredWindowWidth(data.windowWidth)
+                          setStoredWindowHeight(data.windowHeight)
                         }
                       )
                     }
