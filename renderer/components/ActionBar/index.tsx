@@ -28,6 +28,10 @@ const ActionBar = () => {
 
   const openDialogAndFetchFiles = async () => {
     setLoading(true)
+    window.ipc.send("open-directory-dialog", [])
+  }
+
+  useEffect(() => {
     window.ipc.on(
       "selected-directory",
       (files: string[], outputDirectory: string) => {
@@ -42,8 +46,10 @@ const ActionBar = () => {
         )
       }
     )
-    window.ipc.send("open-directory-dialog", [])
-  }
+    return () => {
+      window.ipc.remove("selected-directory")
+    }
+  }, [])
 
   const saveJson = async (values: any) => {
     if (!fileDirectory) {
@@ -54,17 +60,15 @@ const ActionBar = () => {
       return
     }
 
+    const fullFileName = getFileNameFromPath(fileUrl).split(".")
     window.ipc.send("save-label-json", {
       fileDirectory,
       data: {
         windowWidth: document.querySelector("#stage")?.clientWidth,
         windowHeight: document.querySelector("#stage")?.clientHeight,
       },
-      fileName: getFileNameFromPath(fileUrl) + "_windowSize",
+      fileName: fullFileName[0] + "_windowSize" + "." + fullFileName[1],
       path: fileUrl,
-    })
-    window.ipc.on("saved-label-json", message => {
-      console.log("🦄 ~ saveSizeJson ~ message:", message)
     })
 
     window.ipc.send("save-image-json", {
@@ -73,10 +77,20 @@ const ActionBar = () => {
       fileName: getFileNameFromPath(fileUrl),
       path: fileUrl,
     })
+  }
+
+  useEffect(() => {
+    window.ipc.on("saved-label-json", message => {
+      console.log("🦄 ~ saveSizeJson ~ message:", message)
+    })
     window.ipc.on("saved-image-json", message => {
       console.log("🦄 ~ saveImageJson ~ message:", message)
     })
-  }
+    return () => {
+      window.ipc.remove("saved-label-json")
+      window.ipc.remove("saved-image-json")
+    }
+  }, [fileDirectory])
 
   const handleSaveFile = () => {
     setHasSaved(true)

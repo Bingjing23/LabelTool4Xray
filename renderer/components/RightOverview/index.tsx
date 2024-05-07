@@ -125,6 +125,21 @@ const RightOverview: React.FC = () => {
         setStoredWindowHeight(data.windowHeight)
       }
     )
+    window.ipc.on("readed-image-json", (data: any[]) => {
+      if (!data) {
+        setTableDataSource([])
+        dispatchRects({ type: "setRects", rects: [] })
+        dispatchPolygons({ type: "setPolygons", polygons: [] })
+      } else {
+        setTableDataSource(data)
+        const rects =
+          data?.filter(item => item?.rect)?.map(item => item.rect) || []
+        const polygons =
+          data?.filter(item => item?.polygon)?.map(item => item.polygon) || []
+        dispatchRects({ type: "setRects", rects })
+        dispatchPolygons({ type: "setPolygons", polygons })
+      }
+    })
     return () => {
       window.ipc.remove("readed-image-json")
       window.ipc.remove("readed-size-json")
@@ -179,6 +194,7 @@ const RightOverview: React.FC = () => {
   const [modal, contextHolder] = Modal.useModal()
   const [choosedAutoSave, setChoosedAutoSave] = useState(false)
 
+  const fullFileName = getFileNameFromPath(fileUrl).split(".")
   const saveJson = () => {
     window.ipc.send("save-label-json", {
       fileDirectory,
@@ -186,7 +202,7 @@ const RightOverview: React.FC = () => {
         windowWidth: document.querySelector("#stage")?.clientWidth,
         windowHeight: document.querySelector("#stage")?.clientHeight,
       },
-      fileName: getFileNameFromPath(fileUrl) + "_windowSize",
+      fileName: fullFileName[0] + "_windowSize" + "." + fullFileName[1],
       path: fileUrl,
     })
 
@@ -330,32 +346,14 @@ const RightOverview: React.FC = () => {
                       fileName: previousFile.fileName,
                       folderName: "images_data",
                     })
-                    window.ipc.on("readed-image-json", (data: any[]) => {
-                      if (!data) {
-                        setTableDataSource([])
-                        dispatchRects({ type: "setRects", rects: [] })
-                        dispatchPolygons({ type: "setPolygons", polygons: [] })
-                      } else {
-                        setTableDataSource(data)
-                        const rects =
-                          data
-                            ?.filter(item => item?.rect)
-                            ?.map(item => item.rect) || []
-
-                        const polygons =
-                          data
-                            ?.filter(item => item?.polygon)
-                            ?.map(item => item.polygon) || []
-
-                        dispatchRects({ type: "setRects", rects })
-                        dispatchPolygons({ type: "setPolygons", polygons })
-
-                        window.ipc.send("read-json", {
-                          fileDirectory,
-                          fileName: previousFile.fileName + "_windowSize",
-                          folderName: "labels_data",
-                        })
-                      }
+                    window.ipc.send("read-json", {
+                      fileDirectory,
+                      fileName:
+                        previousFile.fileName.split(".")[0] +
+                        "_windowSize" +
+                        "." +
+                        previousFile.fileName.split(".")[0],
+                      folderName: "labels_data",
                     })
                   }}
                 />
@@ -389,40 +387,14 @@ const RightOverview: React.FC = () => {
                       fileName: nextFile.fileName,
                       folderName: "images_data",
                     })
-                    window.ipc.on("readed-image-json", (data: any[]) => {
-                      if (!data) {
-                        setTableDataSource([])
-                        dispatchRects({ type: "setRects", rects: [] })
-                        dispatchPolygons({ type: "setPolygons", polygons: [] })
-                      } else {
-                        setTableDataSource(data)
-                        const rects =
-                          data
-                            ?.filter(item => item?.rect)
-                            ?.map(item => item.rect) || []
-                        const polygons =
-                          data
-                            ?.filter(item => item?.polygon)
-                            ?.map(item => item.polygon) || []
-                        dispatchRects({ type: "setRects", rects })
-                        dispatchPolygons({ type: "setPolygons", polygons })
-
-                        window.ipc.send("read-json", {
-                          fileDirectory,
-                          fileName: nextFile.fileName + "_windowSize",
-                          folderName: "labels_data",
-                        })
-                        window.ipc.on(
-                          "readed-size-json",
-                          (data: {
-                            windowWidth: number
-                            windowHeight: number
-                          }) => {
-                            setStoredWindowWidth(data.windowWidth)
-                            setStoredWindowHeight(data.windowHeight)
-                          }
-                        )
-                      }
+                    window.ipc.send("read-json", {
+                      fileDirectory,
+                      fileName:
+                        nextFile.fileName.split(".")[0] +
+                        "_windowSize" +
+                        "." +
+                        nextFile.fileName.split(".")[0],
+                      folderName: "labels_data",
                     })
                   }}
                 />
@@ -459,42 +431,15 @@ const RightOverview: React.FC = () => {
                     fileName: record.fileName,
                     folderName: "images_data",
                   })
-                  window.ipc.on("readed-image-json", (data: any[]) => {
-                    if (!data && record.path !== fileUrl) {
-                      setTableDataSource([])
-                      dispatchRects({ type: "setRects", rects: [] })
-                      dispatchPolygons({ type: "setPolygons", polygons: [] })
-                    } else {
-                      setTableDataSource(data)
-                      const rects =
-                        data
-                          ?.filter(item => item?.rect)
-                          ?.map(item => item.rect) || []
 
-                      const polygons =
-                        data
-                          ?.filter(item => item?.polygon)
-                          ?.map(item => item.polygon) || []
-
-                      dispatchRects({ type: "setRects", rects })
-                      dispatchPolygons({ type: "setPolygons", polygons })
-
-                      window.ipc.send("read-json", {
-                        fileDirectory,
-                        fileName: record.fileName + "_windowSize",
-                        folderName: "labels_data",
-                      })
-                      window.ipc.on(
-                        "readed-size-json",
-                        (data: {
-                          windowWidth: number
-                          windowHeight: number
-                        }) => {
-                          setStoredWindowWidth(data.windowWidth)
-                          setStoredWindowHeight(data.windowHeight)
-                        }
-                      )
-                    }
+                  window.ipc.send("read-json", {
+                    fileDirectory,
+                    fileName:
+                      record.fileName.split(".")[0] +
+                      "_windowSize" +
+                      "." +
+                      record.fileName.split(".")[0],
+                    folderName: "labels_data",
                   })
                 },
               }

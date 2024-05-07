@@ -106,8 +106,8 @@ const DrawImage = () => {
           points: pts.points.map(p => p * (scaleX === 1 ? scaleY : scaleX)),
         })),
       })
+      setLastSize(currentSize)
     }
-    setLastSize(currentSize)
   }, [rects, polygons, currentSize])
 
   useEffect(() => {
