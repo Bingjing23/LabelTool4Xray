@@ -22,31 +22,19 @@ export type RectData = Medical & {
 
 export type BaseState = {
   loading: boolean
-  setLoading: (loading: boolean) => void
   hasChanged: boolean
-  setHasChanged: (hasChanged: boolean) => void
   hasSaved: boolean
-  setHasSaved: (hasSaved: boolean) => void
   autoSave: boolean
-  setAutoSave: (autoSave: boolean) => void
   fileUrl: string
-  setFileUrl: (fileUrl: string) => void
   fileName: string
-  setFileName: (fileName: string) => void
   hasImage: boolean
-  setHasImage: (hasImage: boolean) => void
   filesData: any[]
-  setFilesData: (filesData: any[]) => void
   fileDirectory: string
-  setFileDirectory: (fileDirectory: string) => void
 
   selectMethod: "rectangle" | "polygon"
-  setSelectMethod: (selectMethod: "rectangle" | "polygon") => void
 
   imageBrightness: number
-  setImageBrightness: (imageBrightness: number) => void
   imageContrast: number
-  setImageContrast: (imageContrast: number) => void
 }
 
 export type Polygon = {

@@ -9,9 +9,10 @@ import {
 import Image from "next/image"
 import LeftArrow from "../../public/svg/Left.svg"
 import RightArrow from "../../public/svg/Right.svg"
-import { useBaseStore, useTableStore } from "../../lib/store"
 import { getFileNameFromPath } from "../ActionBar"
 import { GraphicDataContext } from "../GraphicDataProvider"
+import { BaseDataContext } from "../BaseDataProvider"
+import { TableDataContext } from "../TableDataProvider"
 
 const fileColumns: ColumnsType = [
   {
@@ -104,12 +105,9 @@ const RightOverview: React.FC = () => {
     setStoredWindowWidth,
     setStoredWindowHeight,
   } = useContext(GraphicDataContext)
-  const {
-    removeTableDataSourceByIndex,
-    editTableDataSourceByRowId,
-    setTableDataSource,
-    tableDataSource,
-  } = useTableStore(state => state)
+
+  const { tableData, dispatchTableData } = useContext(TableDataContext)
+  const { tableDataSource } = tableData
 
   useEffect(() => {
     window.ipc.on("saved-label-json", message => {
@@ -127,11 +125,11 @@ const RightOverview: React.FC = () => {
     )
     window.ipc.on("readed-image-json", (data: any[]) => {
       if (!data) {
-        setTableDataSource([])
+        dispatchTableData({ type: "setTableDataSource", tableDataSource: [] })
         dispatchRects({ type: "setRects", rects: [] })
         dispatchPolygons({ type: "setPolygons", polygons: [] })
       } else {
-        setTableDataSource(data)
+        dispatchTableData({ type: "setTableDataSource", tableDataSource: data })
         const rects =
           data?.filter(item => item?.rect)?.map(item => item.rect) || []
         const polygons =
@@ -148,20 +146,9 @@ const RightOverview: React.FC = () => {
     }
   }, [])
 
-  const {
-    hasSaved,
-    setHasSaved,
-    hasChanged,
-    setHasChanged,
-    autoSave,
-    setAutoSave,
-    setFileName,
-    fileUrl,
-    setFileUrl,
-    setHasImage,
-    filesData,
-    fileDirectory,
-  } = useBaseStore(state => state)
+  const { baseData, dispatchBaseData } = useContext(BaseDataContext)
+  const { hasSaved, hasChanged, autoSave, fileUrl, filesData, fileDirectory } =
+    baseData
 
   const operationColumn: ColumnType<any> = {
     title: "Operations",
@@ -182,8 +169,9 @@ const RightOverview: React.FC = () => {
               id: record.polygon.id,
             })
           }
-          removeTableDataSourceByIndex(index)
-          setHasChanged(true)
+
+          dispatchTableData({ type: "removeTableDataSourceByIndex", index })
+          dispatchBaseData({ type: "setHasChanged", hasChanged: true })
         }}
       >
         Delete
@@ -236,11 +224,11 @@ const RightOverview: React.FC = () => {
         okText: "Yes",
         cancelText: "No",
         onOk: () => {
-          setAutoSave(true)
+          dispatchBaseData({ type: "setAutoSave", autoSave: true })
           setChoosedAutoSave(true)
         },
         onCancel: () => {
-          setAutoSave(false)
+          dispatchBaseData({ type: "setAutoSave", autoSave: false })
           setChoosedAutoSave(true)
         },
       })
@@ -270,10 +258,14 @@ const RightOverview: React.FC = () => {
                         isHighlighted: !record.rect.isHighlighted,
                       },
                     })
-                    editTableDataSourceByRowId(record.rowId, {
-                      rect: {
-                        ...record.rect,
-                        isHighlighted: !record.rect.isHighlighted,
+                    dispatchTableData({
+                      type: "editTableDataSourceByRowId",
+                      rowId: record.rowId,
+                      editTableDataSourceByRowId: {
+                        rect: {
+                          ...record.rect,
+                          isHighlighted: !record.rect.isHighlighted,
+                        },
                       },
                     })
                   } else if (record?.polygon) {
@@ -285,14 +277,18 @@ const RightOverview: React.FC = () => {
                         isHighlighted: !record.polygon.isHighlighted,
                       },
                     })
-                    editTableDataSourceByRowId(record.rowId, {
-                      polygon: {
-                        ...record.polygon,
-                        isHighlighted: !record.polygon.isHighlighted,
+                    dispatchTableData({
+                      type: "editTableDataSourceByRowId",
+                      rowId: record.rowId,
+                      editTableDataSourceByRowId: {
+                        polygon: {
+                          ...record.polygon,
+                          isHighlighted: !record.polygon.isHighlighted,
+                        },
                       },
                     })
                   }
-                  setHasChanged(true)
+                  dispatchBaseData({ type: "setHasChanged", hasChanged: true })
                 },
               }
             }}
@@ -313,7 +309,10 @@ const RightOverview: React.FC = () => {
                   className="p-0 w-6 h-6 rounded-md font-bold text-white"
                   style={{ backgroundColor: autoSave ? "#1677ff" : "#f0f0f0" }}
                   onClick={() => {
-                    setAutoSave(!autoSave)
+                    dispatchBaseData({
+                      type: "setAutoSave",
+                      autoSave: !autoSave,
+                    })
                   }}
                 >
                   S
@@ -328,8 +327,11 @@ const RightOverview: React.FC = () => {
                     if (autoSave) {
                       saveJson()
                     }
-                    setHasSaved(false)
-                    setHasChanged(false)
+                    dispatchBaseData({ type: "setHasSaved", hasSaved: false })
+                    dispatchBaseData({
+                      type: "setHasChanged",
+                      hasChanged: false,
+                    })
 
                     const currentIndex = filesData.findIndex(
                       item => item.path === fileUrl
@@ -337,9 +339,18 @@ const RightOverview: React.FC = () => {
                     const previousIndex = Math.max(currentIndex - 1, 0)
                     const previousFile = filesData[previousIndex]
 
-                    setFileUrl(previousFile.path)
-                    setFileName(previousFile.fileName?.split(".")?.slice(0, -1))
-                    setHasImage(true)
+                    dispatchBaseData({
+                      type: "setFileUrl",
+                      fileUrl: previousFile.path,
+                    })
+                    dispatchBaseData({
+                      type: "setFileName",
+                      fileName: previousFile.fileName?.split(".")?.slice(0, -1),
+                    })
+                    dispatchBaseData({
+                      type: "setHasImage",
+                      hasImage: true,
+                    })
 
                     window.ipc.send("read-json", {
                       fileDirectory,
@@ -367,8 +378,11 @@ const RightOverview: React.FC = () => {
                     if (autoSave) {
                       saveJson()
                     }
-                    setHasSaved(false)
-                    setHasChanged(false)
+                    dispatchBaseData({ type: "setHasSaved", hasSaved: false })
+                    dispatchBaseData({
+                      type: "setHasChanged",
+                      hasChanged: false,
+                    })
                     const currentIndex = filesData.findIndex(
                       item => item.path === fileUrl
                     )
@@ -378,9 +392,18 @@ const RightOverview: React.FC = () => {
                     )
                     const nextFile = filesData[nextIndex]
 
-                    setFileUrl(nextFile.path)
-                    setFileName(nextFile.fileName?.split(".")?.slice(0, -1))
-                    setHasImage(true)
+                    dispatchBaseData({
+                      type: "setFileUrl",
+                      fileUrl: nextFile.path,
+                    })
+                    dispatchBaseData({
+                      type: "setFileName",
+                      fileName: nextFile.fileName?.split(".")?.slice(0, -1),
+                    })
+                    dispatchBaseData({
+                      type: "setHasImage",
+                      hasImage: true,
+                    })
 
                     window.ipc.send("read-json", {
                       fileDirectory,
@@ -419,12 +442,21 @@ const RightOverview: React.FC = () => {
                   if (autoSave) {
                     saveJson()
                   }
-                  setHasSaved(false)
-                  setHasChanged(false)
+                  dispatchBaseData({ type: "setHasSaved", hasSaved: false })
+                  dispatchBaseData({ type: "setHasChanged", hasChanged: false })
 
-                  setFileUrl(record.path)
-                  setFileName(record.fileName?.split(".")?.slice(0, -1))
-                  setHasImage(true)
+                  dispatchBaseData({
+                    type: "setFileUrl",
+                    fileUrl: record.path,
+                  })
+                  dispatchBaseData({
+                    type: "setFileName",
+                    fileName: record.fileName?.split(".")?.slice(0, -1),
+                  })
+                  dispatchBaseData({
+                    type: "setHasImage",
+                    hasImage: true,
+                  })
 
                   window.ipc.send("read-json", {
                     fileDirectory,

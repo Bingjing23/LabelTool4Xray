@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useReducer } from "react"
 import { Polygon, Rect } from "../../lib/type"
 
 export const GraphicDataContext = React.createContext<{
@@ -25,7 +25,7 @@ export const GraphicDataContext = React.createContext<{
 
 const GraphicDataProvider = ({ children }: { children: React.ReactNode }) => {
   // rects useReducer
-  const [rects, dispatchRects] = React.useReducer(
+  const [rects, dispatchRects] = useReducer(
     (
       state: Rect[] = [],
       action: {

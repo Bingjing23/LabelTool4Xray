@@ -1,14 +1,14 @@
-import React, { useEffect, useRef } from "react"
+import React, { useContext, useEffect, useRef } from "react"
 import Head from "next/head"
 import { Badge, Layout, Spin, Typography } from "antd"
 import RightOverview from "../components/RightOverview"
 import ActionBar from "../components/ActionBar"
 import dynamic from "next/dynamic"
-import { useBaseStore } from "../lib/store"
-import { useShallow } from "zustand/react/shallow"
 import { useOptionsStore } from "../components/InfoForm"
 import { xtermColors } from "../components/InfoForm/colors"
 import GraphicDataProvider from "../components/GraphicDataProvider"
+import { BaseDataContext } from "../components/BaseDataProvider"
+import TableDataProvider from "../components/TableDataProvider"
 
 const { Content } = Layout
 
@@ -17,14 +17,8 @@ export default function HomePage() {
     ssr: false,
   })
 
-  const { loading, fileDirectory } = useBaseStore(
-    useShallow(state => ({
-      loading: state.loading,
-      fileDirectory: state.fileDirectory,
-    }))
-  )
-
-  const { fileName } = useBaseStore(state => state)
+  const { baseData } = useContext(BaseDataContext)
+  const { fileDirectory, fileName, loading } = baseData
 
   const {
     labelOptions,
@@ -87,15 +81,17 @@ export default function HomePage() {
                 {fileName}
               </Typography.Title>
               <GraphicDataProvider>
-                <div className="flex flex-col md:flex-row md:space-x-4">
-                  <div className="md:w-3/4">
-                    <ActionBar />
-                    <DrawImage />
+                <TableDataProvider>
+                  <div className="flex flex-col md:flex-row md:space-x-4">
+                    <div className="md:w-3/4">
+                      <ActionBar />
+                      <DrawImage />
+                    </div>
+                    <div className="md:w-1/4">
+                      <RightOverview />
+                    </div>
                   </div>
-                  <div className="md:w-1/4">
-                    <RightOverview />
-                  </div>
-                </div>
+                </TableDataProvider>
               </GraphicDataProvider>
             </div>
           </Spin>

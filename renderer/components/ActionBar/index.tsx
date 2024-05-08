@@ -1,7 +1,8 @@
 import { Button, Dropdown, MenuProps, Modal, Slider } from "antd"
 import { DownOutlined } from "@ant-design/icons"
-import { useBaseStore, useTableStore } from "../../lib/store"
-import { useEffect } from "react"
+import { useContext, useEffect } from "react"
+import { BaseDataContext } from "../BaseDataProvider"
+import { TableDataContext } from "../TableDataProvider"
 
 export const getFileNameFromPath = (path: string) => {
   // 正则表达式匹配最后一个斜杠后的所有字符
@@ -11,23 +12,13 @@ export const getFileNameFromPath = (path: string) => {
 
 const ActionBar = () => {
   const [modal, contextHolder] = Modal.useModal()
-  const {
-    setHasSaved,
-    setLoading,
-    fileUrl,
-    setFilesData,
-    fileDirectory,
-    setFileDirectory,
-    setSelectMethod,
-    imageBrightness,
-    setImageBrightness,
-    imageContrast,
-    setImageContrast,
-  } = useBaseStore(state => state)
-  const { tableDataSource } = useTableStore(state => state)
+  const { tableData } = useContext(TableDataContext)
+  const { tableDataSource } = tableData
 
+  const { baseData, dispatchBaseData } = useContext(BaseDataContext)
+  const { fileDirectory, fileUrl, imageBrightness, imageContrast } = baseData
   const openDialogAndFetchFiles = async () => {
-    setLoading(true)
+    dispatchBaseData({ type: "setLoading", loading: true })
     window.ipc.send("open-directory-dialog", [])
   }
 
@@ -35,15 +26,19 @@ const ActionBar = () => {
     window.ipc.on(
       "selected-directory",
       (files: string[], outputDirectory: string) => {
-        setLoading(false)
-        setFileDirectory(outputDirectory)
-        setFilesData(
-          files.map((item: string) => ({
+        dispatchBaseData({ type: "setLoading", loading: false })
+        dispatchBaseData({
+          type: "setFileDirectory",
+          fileDirectory: outputDirectory,
+        })
+        dispatchBaseData({
+          type: "setFilesData",
+          filesData: files.map((item: string) => ({
             key: item,
             path: item,
             fileName: getFileNameFromPath(item),
-          }))
-        )
+          })),
+        })
       }
     )
     return () => {
@@ -93,17 +88,17 @@ const ActionBar = () => {
   }, [fileDirectory])
 
   const handleSaveFile = () => {
-    setHasSaved(true)
+    dispatchBaseData({ type: "setHasSaved", hasSaved: true })
     saveJson(tableDataSource)
   }
 
   useEffect(() => {
     if (!fileDirectory) return
     window.ipc.on("choose rectangle", () => {
-      setSelectMethod("rectangle")
+      dispatchBaseData({ type: "setSelectMethod", selectMethod: "rectangle" })
     })
     window.ipc.on("choose polygon", () => {
-      setSelectMethod("polygon")
+      dispatchBaseData({ type: "setSelectMethod", selectMethod: "polygon" })
     })
     window.ipc.on("save file", () => {
       handleSaveFile()
@@ -175,14 +170,21 @@ const ActionBar = () => {
       <Button
         className="px-2"
         type="text"
-        onClick={() => setSelectMethod("rectangle")}
+        onClick={() =>
+          dispatchBaseData({
+            type: "setSelectMethod",
+            selectMethod: "rectangle",
+          })
+        }
       >
         Rectangle
       </Button>
       <Button
         className="px-2"
         type="text"
-        onClick={() => setSelectMethod("polygon")}
+        onClick={() => {
+          dispatchBaseData({ type: "setSelectMethod", selectMethod: "polygon" })
+        }}
       >
         Polygon
       </Button>
@@ -195,7 +197,10 @@ const ActionBar = () => {
           max={200}
           value={imageBrightness}
           onChange={(value: number) => {
-            setImageBrightness(value)
+            dispatchBaseData({
+              type: "setImageBrightness",
+              imageBrightness: value,
+            })
           }}
         />
       </div>
@@ -208,15 +213,18 @@ const ActionBar = () => {
           max={200}
           value={imageContrast}
           onChange={(value: number) => {
-            setImageContrast(value)
+            dispatchBaseData({
+              type: "setImageContrast",
+              imageContrast: value,
+            })
           }}
         />
       </div>
       <Button
         type="text"
         onClick={() => {
-          setImageBrightness(100)
-          setImageContrast(100)
+          dispatchBaseData({ type: "setImageBrightness", imageBrightness: 100 })
+          dispatchBaseData({ type: "setImageContrast", imageContrast: 100 })
         }}
       >
         Reset

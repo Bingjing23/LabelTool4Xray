@@ -5,24 +5,25 @@ import { Stage, Layer, Image } from "react-konva"
 import useImage from "use-image"
 import InfoForm, { useOptionsStore } from "../InfoForm"
 import useSelectMethodFuncs from "./useSelectMethodFuncs"
-import { useBaseStore, useTableStore } from "../../lib/store"
 import { xtermColors } from "../InfoForm/colors"
 import ResizeObserverFC from "./ResizeObserver"
 import { GraphicDataContext } from "../GraphicDataProvider"
+import { BaseDataContext } from "../BaseDataProvider"
+import { TableDataContext } from "../TableDataProvider"
 
 const BASE_WIDTH = 752
 const BASE_HEIGHT = 720
 
 const DrawImage = () => {
+  const { baseData, dispatchBaseData } = useContext(BaseDataContext)
   const {
-    selectMethod,
-    hasImage,
     fileUrl,
+    selectMethod,
     fileDirectory,
-    setHasChanged,
     imageBrightness,
     imageContrast,
-  } = useBaseStore(state => state)
+    hasImage,
+  } = baseData
   const [size, setSize] = useState<{ width: number; height: number }>({
     width: BASE_WIDTH,
     height: BASE_HEIGHT,
@@ -158,7 +159,7 @@ const DrawImage = () => {
     }
   }, [])
 
-  const { addTableDataSource } = useTableStore(state => state)
+  const { dispatchTableData } = useContext(TableDataContext)
 
   const { modal, methods } = useSelectMethodFuncs()
   const { open: modalOpen, setOpen: setModalOpen } = modal
@@ -219,23 +220,29 @@ const DrawImage = () => {
       },
     ])
     if (selectMethod === "rectangle") {
-      addTableDataSource({
-        ...values,
-        customLabel: newAbnormalityName || values.customLabel,
-        rect: currentRect,
-        rowId: uuidv4(),
+      dispatchTableData({
+        type: "addTableDataSource",
+        addTableDataSource: {
+          ...values,
+          customLabel: newAbnormalityName || values.customLabel,
+          rect: currentRect,
+          rowId: uuidv4(),
+        },
       })
       setCurrentRect(null)
     } else if (selectMethod === "polygon") {
-      addTableDataSource({
-        ...values,
-        customLabel: newAbnormalityName || values.customLabel,
-        polygon: currentPoints,
-        rowId: uuidv4(),
+      dispatchTableData({
+        type: "addTableDataSource",
+        addTableDataSource: {
+          ...values,
+          customLabel: newAbnormalityName || values.customLabel,
+          polygon: currentPoints,
+          rowId: uuidv4(),
+        },
       })
       setCurrentPoints(null)
     }
-    setHasChanged(true)
+    dispatchBaseData({ type: "setHasChanged", hasChanged: true })
     setModalOpen(false)
     form.resetFields()
   }
