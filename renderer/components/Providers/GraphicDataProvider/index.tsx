@@ -1,5 +1,8 @@
-import React, { useReducer } from "react"
+import React, { useReducer, useState } from "react"
 import { Polygon, Rect } from "../../../lib/type"
+
+export const BASE_WIDTH = 768
+export const BASE_HEIGHT = 720
 
 export const GraphicDataContext = React.createContext<{
   rects: Rect[]
@@ -21,6 +24,11 @@ export const GraphicDataContext = React.createContext<{
   setStoredWindowWidth: React.Dispatch<React.SetStateAction<number>>
   storedWindowHeight: number
   setStoredWindowHeight: React.Dispatch<React.SetStateAction<number>>
+
+  size: { width: number; height: number }
+  setSize: React.Dispatch<
+    React.SetStateAction<{ width: number; height: number }>
+  >
 } | null>(null)
 
 const GraphicDataProvider = ({ children }: { children: React.ReactNode }) => {
@@ -88,6 +96,12 @@ const GraphicDataProvider = ({ children }: { children: React.ReactNode }) => {
   )
   const [storedWindowWidth, setStoredWindowWidth] = React.useState(0)
   const [storedWindowHeight, setStoredWindowHeight] = React.useState(0)
+
+  const [size, setSize] = useState<{ width: number; height: number }>({
+    width: BASE_WIDTH,
+    height: BASE_HEIGHT,
+  })
+
   return (
     <GraphicDataContext.Provider
       value={{
@@ -99,6 +113,8 @@ const GraphicDataProvider = ({ children }: { children: React.ReactNode }) => {
         setStoredWindowHeight,
         storedWindowWidth,
         setStoredWindowWidth,
+        size,
+        setSize,
       }}
     >
       {children}

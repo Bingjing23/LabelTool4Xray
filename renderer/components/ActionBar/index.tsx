@@ -3,6 +3,7 @@ import { DownOutlined } from "@ant-design/icons"
 import { useContext, useEffect } from "react"
 import { BaseDataContext } from "../Providers/BaseDataProvider"
 import { TableDataContext } from "../Providers/TableDataProvider"
+import { GraphicDataContext } from "../Providers/GraphicDataProvider"
 
 export const getFileNameFromPath = (path: string) => {
   // 正则表达式匹配最后一个斜杠后的所有字符
@@ -17,6 +18,9 @@ const ActionBar = () => {
 
   const { baseData, dispatchBaseData } = useContext(BaseDataContext)
   const { fileDirectory, fileUrl, imageBrightness, imageContrast } = baseData
+
+  const { size } = useContext(GraphicDataContext)
+
   const openDialogAndFetchFiles = async () => {
     dispatchBaseData({ type: "setLoading", loading: true })
     window.ipc.send("open-directory-dialog", [])
@@ -60,8 +64,8 @@ const ActionBar = () => {
     window.ipc.send("save-label-json", {
       fileDirectory,
       data: {
-        windowWidth: document.querySelector("#stage")?.clientWidth,
-        windowHeight: document.querySelector("#stage")?.clientHeight,
+        windowWidth: size.width,
+        windowHeight: size.height,
       },
       fileName: fullFileName[0] + "_windowSize" + "." + fullFileName[1],
       path: fileUrl,

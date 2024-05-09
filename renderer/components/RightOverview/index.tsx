@@ -104,10 +104,15 @@ const RightOverview: React.FC = () => {
     dispatchPolygons,
     setStoredWindowWidth,
     setStoredWindowHeight,
+    size,
   } = useContext(GraphicDataContext)
 
   const { tableData, dispatchTableData } = useContext(TableDataContext)
   const { tableDataSource } = tableData
+
+  const { baseData, dispatchBaseData } = useContext(BaseDataContext)
+  const { hasSaved, hasChanged, autoSave, fileUrl, filesData, fileDirectory } =
+    baseData
 
   useEffect(() => {
     window.ipc.on("saved-label-json", message => {
@@ -145,10 +150,6 @@ const RightOverview: React.FC = () => {
       window.ipc.remove("saved-label-json")
     }
   }, [])
-
-  const { baseData, dispatchBaseData } = useContext(BaseDataContext)
-  const { hasSaved, hasChanged, autoSave, fileUrl, filesData, fileDirectory } =
-    baseData
 
   const operationColumn: ColumnType<any> = {
     title: "Operations",
@@ -188,8 +189,8 @@ const RightOverview: React.FC = () => {
     window.ipc.send("save-label-json", {
       fileDirectory,
       data: {
-        windowWidth: document.querySelector("#stage")?.clientWidth,
-        windowHeight: document.querySelector("#stage")?.clientHeight,
+        windowWidth: size.width,
+        windowHeight: size.height,
       },
       fileName: fullFileName[0] + "_windowSize" + "." + fullFileName[1],
       path: fileUrl,

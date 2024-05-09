@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react"
 
 export type ResizeObserverFCProps = {
-  onResize: (width: number, height: number) => void
+  onResize: () => void
   children: React.ReactNode
 }
 const ResizeObserverFC: React.FC<ResizeObserverFCProps> = (
@@ -10,11 +10,10 @@ const ResizeObserverFC: React.FC<ResizeObserverFCProps> = (
   const { onResize, children } = props
   const elementRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
-    const stageElement = document.querySelector("#stage")
     const element = elementRef.current
-    if (!element || !stageElement) return
+    if (!element) return
     const resizeObserver = new ResizeObserver(() => {
-      onResize(stageElement.clientWidth, stageElement.clientHeight)
+      onResize()
     })
     resizeObserver.observe(element)
     return () => resizeObserver.disconnect()

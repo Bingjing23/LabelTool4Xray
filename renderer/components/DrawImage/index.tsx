@@ -7,13 +7,13 @@ import InfoForm from "../InfoForm"
 import useSelectMethodFuncs from "./useSelectMethodFuncs"
 import { xtermColors } from "../InfoForm/colors"
 import ResizeObserverFC from "./ResizeObserver"
-import { GraphicDataContext } from "../Providers/GraphicDataProvider"
+import {
+  BASE_WIDTH,
+  GraphicDataContext,
+} from "../Providers/GraphicDataProvider"
 import { BaseDataContext } from "../Providers/BaseDataProvider"
 import { TableDataContext } from "../Providers/TableDataProvider"
 import { OptionsContext } from "../Providers/OptionsProvider"
-
-const BASE_WIDTH = 768
-const BASE_HEIGHT = 720
 
 const DrawImage = () => {
   const { baseData, dispatchBaseData } = useContext(BaseDataContext)
@@ -25,10 +25,6 @@ const DrawImage = () => {
     imageContrast,
     hasImage,
   } = baseData
-  const [size, setSize] = useState<{ width: number; height: number }>({
-    width: BASE_WIDTH,
-    height: BASE_HEIGHT,
-  })
   const [image] = useImage(`atom://${fileUrl}`, "anonymous")
   const [form] = Form.useForm()
   const [modalFn, contextHolder] = Modal.useModal()
@@ -45,6 +41,8 @@ const DrawImage = () => {
     setStoredWindowWidth,
     storedWindowHeight,
     setStoredWindowHeight,
+    size,
+    setSize,
   } = useContext(GraphicDataContext)
   const { tableData, dispatchTableData } = useContext(TableDataContext)
   const { tableDataSource } = tableData
@@ -71,10 +69,7 @@ const DrawImage = () => {
     } else {
       const width = currentInnerWidth * 0.9375 * scale
       const height = currentInnerWidth * 0.9375
-      setSize({
-        width,
-        height,
-      })
+      setSize({ width, height })
       if (!setOnceRef.current) {
         setOnceRef.current = true
         setLastSize([width, height])
@@ -310,7 +305,7 @@ const DrawImage = () => {
 
   return (
     <ResizeObserverFC
-      onResize={(width, height) => {
+      onResize={() => {
         setResetSizeFlag(resetSizeFlag => resetSizeFlag + 1)
       }}
     >
