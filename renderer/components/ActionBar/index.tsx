@@ -1,8 +1,8 @@
 import { Button, Dropdown, MenuProps, Modal, Slider } from "antd"
 import { DownOutlined } from "@ant-design/icons"
 import { useContext, useEffect } from "react"
-import { BaseDataContext } from "../BaseDataProvider"
-import { TableDataContext } from "../TableDataProvider"
+import { BaseDataContext } from "../Providers/BaseDataProvider"
+import { TableDataContext } from "../Providers/TableDataProvider"
 
 export const getFileNameFromPath = (path: string) => {
   // 正则表达式匹配最后一个斜杠后的所有字符

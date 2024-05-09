@@ -1,7 +1,7 @@
 import { useContext, useState } from "react"
 import { Line, Rect } from "react-konva"
 import { v4 as uuidv4 } from "uuid"
-import { GraphicDataContext } from "../GraphicDataProvider"
+import { GraphicDataContext } from "../Providers/GraphicDataProvider"
 
 const useSelectMethodFuncs = () => {
   const [drawing, setDrawing] = useState(false)

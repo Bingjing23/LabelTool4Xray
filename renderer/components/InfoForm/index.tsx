@@ -1,17 +1,8 @@
 import { Form, Badge, Select, Input } from "antd"
-import { create } from "zustand"
 import { xtermColors } from "./colors"
 import { FormProps } from "antd/es/form/Form"
-import { ReactNode } from "react"
-
-type OptionsState = {
-  labelOptions: { label: ReactNode; value: string; color: string }[]
-  setLabelOptions: (
-    labelOptions: { label: ReactNode; value: string; color: string }[]
-  ) => void
-  originalnewAbnormalityLabelOptions: string[]
-  setOriginalnewAbnormalityLabelOptions: (originalOptions: string[]) => void
-}
+import { useContext } from "react"
+import { OptionsContext } from "../Providers/OptionsProvider"
 
 // disease labels:
 // atelectasis, consolidation, pneumothorax, emphysema, nodule, enlarged cardiac silhouette
@@ -59,14 +50,6 @@ export const labelOptions = [
     color: xtermColors[5],
   },
 ]
-
-export const useOptionsStore = create<OptionsState>()(set => ({
-  labelOptions: labelOptions,
-  setLabelOptions: labelOptions => set({ labelOptions }),
-  originalnewAbnormalityLabelOptions: [],
-  setOriginalnewAbnormalityLabelOptions: originalOptions =>
-    set({ originalnewAbnormalityLabelOptions: originalOptions }),
-}))
 
 export const severityOptions = [
   {
@@ -207,7 +190,7 @@ export const anatomicalRegionsOptions = [
 ]
 
 const InfoForm: React.FC<FormProps> = (props: FormProps) => {
-  const { labelOptions } = useOptionsStore(state => state)
+  const { labelOptions } = useContext(OptionsContext)
 
   return (
     <Form layout="vertical" {...props}>

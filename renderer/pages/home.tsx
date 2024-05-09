@@ -4,11 +4,11 @@ import { Badge, Layout, Spin, Typography } from "antd"
 import RightOverview from "../components/RightOverview"
 import ActionBar from "../components/ActionBar"
 import dynamic from "next/dynamic"
-import { useOptionsStore } from "../components/InfoForm"
 import { xtermColors } from "../components/InfoForm/colors"
-import GraphicDataProvider from "../components/GraphicDataProvider"
-import { BaseDataContext } from "../components/BaseDataProvider"
-import TableDataProvider from "../components/TableDataProvider"
+import GraphicDataProvider from "../components/Providers/GraphicDataProvider"
+import { BaseDataContext } from "../components/Providers/BaseDataProvider"
+import TableDataProvider from "../components/Providers/TableDataProvider"
+import { OptionsContext } from "../components/Providers/OptionsProvider"
 
 const { Content } = Layout
 
@@ -25,7 +25,7 @@ export default function HomePage() {
     setLabelOptions,
     originalnewAbnormalityLabelOptions,
     setOriginalnewAbnormalityLabelOptions,
-  } = useOptionsStore(state => state)
+  } = useContext(OptionsContext)
 
   const firstRender = useRef(true)
 

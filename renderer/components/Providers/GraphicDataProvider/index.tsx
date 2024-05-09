@@ -1,5 +1,5 @@
 import React, { useReducer } from "react"
-import { Polygon, Rect } from "../../lib/type"
+import { Polygon, Rect } from "../../../lib/type"
 
 export const GraphicDataContext = React.createContext<{
   rects: Rect[]

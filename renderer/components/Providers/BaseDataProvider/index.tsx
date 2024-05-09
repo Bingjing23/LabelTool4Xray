@@ -1,5 +1,5 @@
 import { createContext, useReducer } from "react"
-import { BaseState } from "../../lib/type"
+import { BaseState } from "../../../lib/type"
 export const BaseDataContext = createContext<{
   baseData: BaseState
   dispatchBaseData: React.Dispatch<{

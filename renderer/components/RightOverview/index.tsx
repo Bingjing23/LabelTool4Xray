@@ -1,18 +1,15 @@
 import { useContext, useEffect, useMemo, useState } from "react"
 import { Badge, Button, Card, Modal, Space, Table } from "antd"
 import { ColumnType, ColumnsType } from "antd/es/table"
-import {
-  anatomicalRegionsOptions,
-  severityOptions,
-  useOptionsStore,
-} from "../InfoForm"
+import { anatomicalRegionsOptions, severityOptions } from "../InfoForm"
 import Image from "next/image"
 import LeftArrow from "../../public/svg/Left.svg"
 import RightArrow from "../../public/svg/Right.svg"
 import { getFileNameFromPath } from "../ActionBar"
-import { GraphicDataContext } from "../GraphicDataProvider"
-import { BaseDataContext } from "../BaseDataProvider"
-import { TableDataContext } from "../TableDataProvider"
+import { GraphicDataContext } from "../Providers/GraphicDataProvider"
+import { BaseDataContext } from "../Providers/BaseDataProvider"
+import { TableDataContext } from "../Providers/TableDataProvider"
+import { OptionsContext } from "../Providers/OptionsProvider"
 
 const fileColumns: ColumnsType = [
   {
@@ -32,7 +29,7 @@ const fileColumns: ColumnsType = [
 ]
 
 const RightOverview: React.FC = () => {
-  const { labelOptions } = useOptionsStore(state => state)
+  const { labelOptions } = useContext(OptionsContext)
   const labelColumns: ColumnsType = useMemo(
     () => [
       {

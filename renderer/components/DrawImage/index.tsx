@@ -3,13 +3,14 @@ import React, { Fragment, useContext, useEffect, useRef, useState } from "react"
 import { v4 as uuidv4 } from "uuid"
 import { Stage, Layer, Image } from "react-konva"
 import useImage from "use-image"
-import InfoForm, { useOptionsStore } from "../InfoForm"
+import InfoForm from "../InfoForm"
 import useSelectMethodFuncs from "./useSelectMethodFuncs"
 import { xtermColors } from "../InfoForm/colors"
 import ResizeObserverFC from "./ResizeObserver"
-import { GraphicDataContext } from "../GraphicDataProvider"
-import { BaseDataContext } from "../BaseDataProvider"
-import { TableDataContext } from "../TableDataProvider"
+import { GraphicDataContext } from "../Providers/GraphicDataProvider"
+import { BaseDataContext } from "../Providers/BaseDataProvider"
+import { TableDataContext } from "../Providers/TableDataProvider"
+import { OptionsContext } from "../Providers/OptionsProvider"
 
 const BASE_WIDTH = 752
 const BASE_HEIGHT = 720
@@ -174,7 +175,7 @@ const DrawImage = () => {
     setLabelOptions,
     originalnewAbnormalityLabelOptions,
     setOriginalnewAbnormalityLabelOptions,
-  } = useOptionsStore(state => state)
+  } = useContext(OptionsContext)
 
   const handleSubmit = values => {
     console.log("Form Values:", values)
