@@ -1,7 +1,6 @@
 import { useContext, useEffect, useMemo, useState } from "react"
 import { Badge, Button, Card, Modal, Space, Table } from "antd"
 import { ColumnType, ColumnsType } from "antd/es/table"
-import { anatomicalRegionsOptions, severityOptions } from "../InfoForm"
 import Image from "next/image"
 import LeftArrow from "../../public/svg/Left.svg"
 import RightArrow from "../../public/svg/Right.svg"
@@ -9,7 +8,11 @@ import { getFileNameFromPath } from "../ActionBar"
 import { GraphicDataContext } from "../Providers/GraphicDataProvider"
 import { BaseDataContext } from "../Providers/BaseDataProvider"
 import { TableDataContext } from "../Providers/TableDataProvider"
-import { OptionsContext } from "../Providers/OptionsProvider"
+import {
+  OptionsContext,
+  anatomicalRegionsOptions,
+  severityOptions,
+} from "../Providers/OptionsProvider"
 
 const fileColumns: ColumnsType = [
   {

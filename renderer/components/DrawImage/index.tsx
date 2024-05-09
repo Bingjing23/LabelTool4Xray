@@ -12,7 +12,7 @@ import { BaseDataContext } from "../Providers/BaseDataProvider"
 import { TableDataContext } from "../Providers/TableDataProvider"
 import { OptionsContext } from "../Providers/OptionsProvider"
 
-const BASE_WIDTH = 752
+const BASE_WIDTH = 768
 const BASE_HEIGHT = 720
 
 const DrawImage = () => {
@@ -46,6 +46,8 @@ const DrawImage = () => {
     storedWindowHeight,
     setStoredWindowHeight,
   } = useContext(GraphicDataContext)
+  const { tableData, dispatchTableData } = useContext(TableDataContext)
+  const { tableDataSource } = tableData
 
   useEffect(() => {
     if (!image) return
@@ -108,6 +110,34 @@ const DrawImage = () => {
           points: pts.points.map(p => p * (scaleX === 1 ? scaleY : scaleX)),
         })),
       })
+
+      dispatchTableData({
+        type: "setTableDataSource",
+        tableDataSource: tableDataSource.map(item => {
+          if (item.rect) {
+            return {
+              ...item,
+              rect: {
+                ...item.rect,
+                x: item.rect.x * scaleX,
+                y: item.rect.y * scaleY,
+                width: item.rect.width * scaleX,
+                height: item.rect.height * scaleY,
+              },
+            }
+          } else if (item.polygon) {
+            return {
+              ...item,
+              polygon: {
+                ...item.polygon,
+                points: item.polygon.points.map(
+                  p => p * (scaleX === 1 ? scaleY : scaleX)
+                ),
+              },
+            }
+          }
+        }),
+      })
       setLastSize(currentSize)
     }
   }, [rects, polygons, currentSize])
@@ -123,6 +153,11 @@ const DrawImage = () => {
 
   useEffect(() => {
     if (!storedWindowWidth || !storedWindowHeight || !lastSize.length) return
+    console.log("🦄 ~ useEffect ~ storedWindowWidth:", [
+      storedWindowWidth,
+      storedWindowHeight,
+    ])
+    console.log("🦄 ~ useEffect ~ lastSize:", lastSize)
     let scaleX = lastSize[0] / storedWindowWidth
     scaleX = Math.abs(Number(scaleX.toFixed(3)) - 1) <= 0.002 ? 1 : scaleX
     let scaleY = lastSize[1] / storedWindowHeight
@@ -146,6 +181,33 @@ const DrawImage = () => {
           points: pts.points.map(p => p * (scaleX === 1 ? scaleY : scaleX)),
         })),
       })
+      dispatchTableData({
+        type: "setTableDataSource",
+        tableDataSource: tableDataSource.map(item => {
+          if (item.rect) {
+            return {
+              ...item,
+              rect: {
+                ...item.rect,
+                x: item.rect.x * scaleX,
+                y: item.rect.y * scaleY,
+                width: item.rect.width * scaleX,
+                height: item.rect.height * scaleY,
+              },
+            }
+          } else if (item.polygon) {
+            return {
+              ...item,
+              polygon: {
+                ...item.polygon,
+                points: item.polygon.points.map(
+                  p => p * (scaleX === 1 ? scaleY : scaleX)
+                ),
+              },
+            }
+          }
+        }),
+      })
     }
     setStoredWindowWidth(0)
     setStoredWindowHeight(0)
@@ -159,8 +221,6 @@ const DrawImage = () => {
       window.ipc.remove("saved-label-json")
     }
   }, [])
-
-  const { dispatchTableData } = useContext(TableDataContext)
 
   const { modal, methods } = useSelectMethodFuncs()
   const { open: modalOpen, setOpen: setModalOpen } = modal
