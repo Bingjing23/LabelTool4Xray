@@ -184,6 +184,7 @@ const RightOverview: React.FC = () => {
 
   const fullFileName = getFileNameFromPath(fileUrl).split(".")
   const saveJson = () => {
+    if (!fileUrl) return
     window.ipc.send("save-label-json", {
       fileDirectory,
       data: {

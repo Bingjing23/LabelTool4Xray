@@ -55,6 +55,7 @@ const ActionBar = () => {
       return
     }
 
+    if (!fileUrl) return
     const fullFileName = getFileNameFromPath(fileUrl).split(".")
     window.ipc.send("save-label-json", {
       fileDirectory,
