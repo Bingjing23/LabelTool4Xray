@@ -15,6 +15,11 @@ import { BaseDataContext } from "../Providers/BaseDataProvider"
 import { TableDataContext } from "../Providers/TableDataProvider"
 import { OptionsContext } from "../Providers/OptionsProvider"
 
+const isWindows = () => {
+  const userAgent = navigator.userAgent.toLowerCase()
+  return userAgent.includes("win")
+}
+
 const DrawImage = () => {
   const { baseData, dispatchBaseData } = useContext(BaseDataContext)
   const {
@@ -25,7 +30,10 @@ const DrawImage = () => {
     imageContrast,
     hasImage,
   } = baseData
-  const [image] = useImage(`atom://${fileUrl}`, "anonymous")
+  const [image] = useImage(
+    `${isWindows() ? "file" : "atom"}://${fileUrl}`,
+    "anonymous"
+  )
   const [form] = Form.useForm()
   const [modalFn, contextHolder] = Modal.useModal()
   const [resetSizeFlag, setResetSizeFlag] = useState(0)

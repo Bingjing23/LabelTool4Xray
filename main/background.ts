@@ -34,6 +34,7 @@ if (isProd) {
     height: 900,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
+      webSecurity: platform === "win32" ? false : true,
     },
   })
 
