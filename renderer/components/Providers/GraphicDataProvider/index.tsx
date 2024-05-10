@@ -4,6 +4,21 @@ import { Polygon, Rect } from "../../../lib/type"
 export const BASE_WIDTH = 768
 export const BASE_HEIGHT = 720
 
+type currentRectProps = {
+  x: number
+  y: number
+  width: number
+  height: number
+  id: string
+  isHighlighted: boolean
+}
+
+type currentPolygonProps = {
+  points: number[]
+  id: string
+  isHighlighted: boolean
+}
+
 export const GraphicDataContext = React.createContext<{
   rects: Rect[]
   dispatchRects: React.Dispatch<{
@@ -29,6 +44,11 @@ export const GraphicDataContext = React.createContext<{
   setSize: React.Dispatch<
     React.SetStateAction<{ width: number; height: number }>
   >
+
+  currentRect: currentRectProps
+  setCurrentRect: React.Dispatch<React.SetStateAction<currentRectProps>>
+  currentPoints: currentPolygonProps
+  setCurrentPoints: React.Dispatch<React.SetStateAction<currentPolygonProps>>
 } | null>(null)
 
 const GraphicDataProvider = ({ children }: { children: React.ReactNode }) => {
@@ -94,13 +114,18 @@ const GraphicDataProvider = ({ children }: { children: React.ReactNode }) => {
     },
     []
   )
-  const [storedWindowWidth, setStoredWindowWidth] = React.useState(0)
-  const [storedWindowHeight, setStoredWindowHeight] = React.useState(0)
+  const [storedWindowWidth, setStoredWindowWidth] = useState(0)
+  const [storedWindowHeight, setStoredWindowHeight] = useState(0)
 
   const [size, setSize] = useState<{ width: number; height: number }>({
     width: BASE_WIDTH,
     height: BASE_HEIGHT,
   })
+
+  const [currentRect, setCurrentRect] = useState<currentRectProps | null>(null)
+
+  const [currentPoints, setCurrentPoints] =
+    useState<currentPolygonProps | null>(null)
 
   return (
     <GraphicDataContext.Provider
@@ -115,6 +140,10 @@ const GraphicDataProvider = ({ children }: { children: React.ReactNode }) => {
         setStoredWindowWidth,
         size,
         setSize,
+        currentRect,
+        setCurrentRect,
+        currentPoints,
+        setCurrentPoints,
       }}
     >
       {children}

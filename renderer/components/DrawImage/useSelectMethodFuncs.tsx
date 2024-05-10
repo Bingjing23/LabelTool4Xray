@@ -5,21 +5,16 @@ import { GraphicDataContext } from "../Providers/GraphicDataProvider"
 
 const useSelectMethodFuncs = () => {
   const [drawing, setDrawing] = useState(false)
-  const [currentRect, setCurrentRect] = useState<{
-    x: number
-    y: number
-    width: number
-    height: number
-    id: string
-    isHighlighted: boolean
-  }>(null)
-  const { rects, dispatchRects, polygons, dispatchPolygons } =
-    useContext(GraphicDataContext)
-  const [currentPoints, setCurrentPoints] = useState<{
-    points: number[]
-    id: string
-    isHighlighted: boolean
-  }>(null)
+  const {
+    rects,
+    dispatchRects,
+    polygons,
+    dispatchPolygons,
+    currentRect,
+    setCurrentRect,
+    currentPoints,
+    setCurrentPoints,
+  } = useContext(GraphicDataContext)
 
   const [modalopen, setModalOpen] = useState(false)
 
@@ -90,8 +85,6 @@ const useSelectMethodFuncs = () => {
             )}
           </>
         ),
-        currentRect,
-        setCurrentRect,
         rects,
       },
       polygon: {
@@ -144,8 +137,6 @@ const useSelectMethodFuncs = () => {
             )}
           </>
         ),
-        currentPoints,
-        setCurrentPoints,
       },
     },
   }

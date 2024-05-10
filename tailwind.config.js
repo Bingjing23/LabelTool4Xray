@@ -12,7 +12,13 @@ module.exports = {
       gray: colors.gray,
       blue: colors.blue,
     },
-    extend: {},
+    extend: {
+      screens: {
+        "3xl": "2048px",
+        "4xl": "2560px",
+        "5xl": "3840px",
+      },
+    },
   },
   plugins: [],
   important: true,

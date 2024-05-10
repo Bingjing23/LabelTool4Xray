@@ -51,6 +51,10 @@ const DrawImage = () => {
     setStoredWindowHeight,
     size,
     setSize,
+    currentRect,
+    setCurrentRect,
+    currentPoints,
+    setCurrentPoints,
   } = useContext(GraphicDataContext)
   const { tableData, dispatchTableData } = useContext(TableDataContext)
   const { tableDataSource } = tableData
@@ -62,6 +66,8 @@ const DrawImage = () => {
     const scale = imageWidth / imageHeight
     const currentInnerWidth =
       document.querySelector("#stage")?.clientWidth || BASE_WIDTH
+    const maxInnerHeight = window.innerHeight - 103
+
     if (imageWidth > imageHeight) {
       const width = currentInnerWidth
       const height = currentInnerWidth / scale
@@ -75,8 +81,11 @@ const DrawImage = () => {
         }
       }
     } else {
-      const width = currentInnerWidth * 0.9375 * scale
-      const height = currentInnerWidth * 0.9375
+      const height =
+        currentInnerWidth * 0.9375 > maxInnerHeight
+          ? maxInnerHeight
+          : currentInnerWidth * 0.9375
+      const width = height * scale
       setSize({ width, height })
       if (!setOnceRef.current) {
         setOnceRef.current = true
@@ -114,10 +123,28 @@ const DrawImage = () => {
         })),
       })
 
+      if (currentRect) {
+        setCurrentRect({
+          ...currentRect,
+          x: currentRect.x * scaleX,
+          y: currentRect.y * scaleY,
+          width: currentRect.width * scaleX,
+          height: currentRect.height * scaleY,
+        })
+      }
+      if (currentPoints) {
+        setCurrentPoints({
+          ...currentPoints,
+          points: currentPoints.points.map(
+            p => p * (scaleX === 1 ? scaleY : scaleX)
+          ),
+        })
+      }
+
       dispatchTableData({
         type: "setTableDataSource",
         tableDataSource: tableDataSource.map(item => {
-          if (item.rect) {
+          if (item?.rect) {
             return {
               ...item,
               rect: {
@@ -128,7 +155,7 @@ const DrawImage = () => {
                 height: item.rect.height * scaleY,
               },
             }
-          } else if (item.polygon) {
+          } else if (item?.polygon) {
             return {
               ...item,
               polygon: {
@@ -156,11 +183,6 @@ const DrawImage = () => {
 
   useEffect(() => {
     if (!storedWindowWidth || !storedWindowHeight || !lastSize.length) return
-    console.log("🦄 ~ useEffect ~ storedWindowWidth:", [
-      storedWindowWidth,
-      storedWindowHeight,
-    ])
-    console.log("🦄 ~ useEffect ~ lastSize:", lastSize)
     let scaleX = lastSize[0] / storedWindowWidth
     scaleX = Math.abs(Number(scaleX.toFixed(3)) - 1) <= 0.002 ? 1 : scaleX
     let scaleY = lastSize[1] / storedWindowHeight
@@ -184,10 +206,30 @@ const DrawImage = () => {
           points: pts.points.map(p => p * (scaleX === 1 ? scaleY : scaleX)),
         })),
       })
+
+      if (currentRect) {
+        setCurrentRect({
+          ...currentRect,
+          x: currentRect.x * scaleX,
+          y: currentRect.y * scaleY,
+          width: currentRect.width * scaleX,
+          height: currentRect.height * scaleY,
+        })
+      }
+
+      if (currentPoints) {
+        setCurrentPoints({
+          ...currentPoints,
+          points: currentPoints.points.map(
+            p => p * (scaleX === 1 ? scaleY : scaleX)
+          ),
+        })
+      }
+
       dispatchTableData({
         type: "setTableDataSource",
         tableDataSource: tableDataSource.map(item => {
-          if (item.rect) {
+          if (item?.rect) {
             return {
               ...item,
               rect: {
@@ -198,7 +240,7 @@ const DrawImage = () => {
                 height: item.rect.height * scaleY,
               },
             }
-          } else if (item.polygon) {
+          } else if (item?.polygon) {
             return {
               ...item,
               polygon: {
@@ -227,8 +269,6 @@ const DrawImage = () => {
 
   const { modal, methods } = useSelectMethodFuncs()
   const { open: modalOpen, setOpen: setModalOpen } = modal
-  const { currentRect, setCurrentRect } = methods.rectangle
-  const { currentPoints, setCurrentPoints } = methods.polygon
 
   const handleMouseDown = methods[selectMethod].handleMouseDown
   const handleMouseMove = methods[selectMethod].handleMouseMove
