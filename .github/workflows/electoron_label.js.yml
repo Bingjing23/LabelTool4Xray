@@ -44,7 +44,7 @@ jobs:
         run: npm install
 
       - name: Build/release Electron app
-        uses: coparse-inc/action-electron-builder@v1.0.0
+        uses: heliomarpm/action-electron-builder@v2.1
         with:
           # GitHub token, automatically provided to the action
           # (No need to define this secret in the repo settings)
