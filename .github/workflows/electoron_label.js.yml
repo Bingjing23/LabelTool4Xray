@@ -11,7 +11,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        os: [macos-latest, windows-latest]
 
     steps:
       - name: Check out Git repository
@@ -51,11 +51,11 @@ jobs:
           mv "dist/Label Setup ${{ github.ref_name }}.exe" .
         shell: pwsh
 
-      - name: Archive Linux artifacts
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          tar -czvf "Label-${{ github.ref_name }}.tar.gz" -C dist/linux-unpacked .
-          mv dist/Label-${{ github.ref_name }}.AppImage .
+      # - name: Archive Linux artifacts
+      #   if: matrix.os == 'ubuntu-latest'
+      #   run: |
+      #     tar -czvf "Label-${{ github.ref_name }}.tar.gz" -C dist/linux-unpacked .
+      #     mv dist/Label-${{ github.ref_name }}.AppImage .
 
       - name: Prepare MacOS artifacts
         if: matrix.os == 'macos-latest'
@@ -70,7 +70,5 @@ jobs:
           files: |
             Label-${{ github.ref_name }}-windows.zip
             Label Setup ${{ github.ref_name }}.exe
-            Label-${{ github.ref_name }}.tar.gz
-            Label-${{ github.ref_name }}.AppImage
             Label-${{ github.ref_name }}-arm64-mac.zip
             Label-${{ github.ref_name }}-arm64.dmg
