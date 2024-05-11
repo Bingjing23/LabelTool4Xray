@@ -3,6 +3,8 @@ name: Build/release
 on:
   push:
     branches: [ "master" ]
+    tags:
+      - '*'
   pull_request:
     branches: [ "master" ]
 
@@ -39,6 +41,7 @@ jobs:
         with:
           node-version: '18.x' # Specify the Node.js version you need
           cache: 'npm'
+          cache-dependency-path: 'package-lock.json'
 
       - name: Install dependencies
         run: npm install
@@ -46,5 +49,33 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Check
-        run: cd dist && ls
+      - name: Archive Windows artifacts
+        if: matrix.os == 'windows-latest'
+        run: |
+          Compress-Archive -Path dist/win-unpacked/* -DestinationPath "Label-${{ github.ref_name }}-windows.zip"
+          mv "dist/Label Setup ${{ github.ref_name }}.exe" .
+        shell: pwsh
+
+      - name: Archive Linux artifacts
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          tar -czvf "Label-${{ github.ref_name }}.tar.gz" -C dist/linux-unpacked .
+          mv dist/Label-${{ github.ref_name }}.AppImage .
+
+      - name: Prepare MacOS artifacts
+        if: matrix.os == 'macos-latest'
+        run: |
+          mv dist/Label-${{ github.ref_name }}-arm64-mac.zip .
+          mv dist/Label-${{ github.ref_name }}-arm64.dmg .
+
+      - name: Upload artifacts to release
+        uses: softprops/action-gh-release@v2.0.5
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            Label-${{ github.ref_name }}-windows.zip
+            Label Setup ${{ github.ref_name }}.exe
+            Label-${{ github.ref_name }}.tar.gz
+            Label-${{ github.ref_name }}.AppImage
+            Label-${{ github.ref_name }}-arm64-mac.zip
+            Label-${{ github.ref_name }}-arm64.dmg
