@@ -40,8 +40,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18.x' # Specify the Node.js version you need
-          cache: 'npm'
-          cache-dependency-path: 'package-lock.json'
 
       - name: Install dependencies
         run: npm install
