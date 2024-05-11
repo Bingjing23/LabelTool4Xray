@@ -68,13 +68,19 @@ jobs:
         run: |
           mv dist/Label-${{ env.TAG_NAME }}-arm64-mac.zip .
           mv dist/Label-${{ env.TAG_NAME }}-arm64.dmg .
-
-      - name: Upload artifacts to release
+          
+      - name: Upload Windows artifacts to release
+        if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'windows-latest'
         uses: softprops/action-gh-release@v2.0.5
-        if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
             Label-${{ env.TAG_NAME }}-windows.zip
             Label Setup ${{ env.TAG_NAME }}.exe
+
+      - name: Upload MacOS artifacts to release
+        if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'macos-latest'
+        uses: softprops/action-gh-release@v2.0.5
+        with:
+          files: |
             Label-${{ env.TAG_NAME }}-arm64-mac.zip
             Label-${{ env.TAG_NAME }}-arm64.dmg
