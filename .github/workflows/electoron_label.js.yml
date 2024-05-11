@@ -23,7 +23,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: |
           $tagName = "${{ github.ref }}" -replace 'refs/tags/v', ''
-          echo "TAG_NAME=$tagName" >> $GITHUB_ENV
+          echo "TAG_NAME=$tagName" | Out-File -FilePath $env:GITHUB_ENV -Append
         env:
           GITHUB_REF: ${{ github.ref }}
         shell: pwsh
