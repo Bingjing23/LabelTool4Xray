@@ -1,6 +1,6 @@
-appId: com.example.nextron
-productName: Label
-copyright: Copyright © 2018 Yoshihide Shiono
+appId: com.electron.labelTool4Xray
+productName: LabelTool4Xray
+copyright: Copyright © 2024 Bingjing
 directories:
   output: dist
   buildResources: resources

@@ -64,36 +64,36 @@ jobs:
       - name: Archive Windows artifacts
         if: matrix.os == 'windows-latest'
         run: |
-          Compress-Archive -Path dist/win-unpacked/* -DestinationPath "Label-${{ env.TAG_NAME }}-windows.zip"
-          mv "dist/Label Setup ${{ env.TAG_NAME }}.exe" .
+          Compress-Archive -Path dist/win-unpacked/* -DestinationPath "LabelTool4Xray-${{ env.TAG_NAME }}-windows.zip"
+          mv "dist/LabelTool4Xray Setup ${{ env.TAG_NAME }}.exe" .
         shell: pwsh
 
       # - name: Archive Linux artifacts
       #   if: matrix.os == 'ubuntu-latest'
       #   run: |
-      #     tar -czvf "Label-${{ env.TAG_NAME }}.tar.gz" -C dist/linux-unpacked .
-      #     mv dist/Label-${{ env.TAG_NAME }}.AppImage .
+      #     tar -czvf "LabelTool4Xray-${{ env.TAG_NAME }}.tar.gz" -C dist/linux-unpacked .
+      #     mv dist/LabelTool4Xray-${{ env.TAG_NAME }}.AppImage .
 
       - name: Prepare MacOS artifacts
         if: matrix.os == 'macos-latest'
         run: |
-          mv dist/Label-${{ env.TAG_NAME }}-arm64-mac.zip .
-          mv dist/Label-${{ env.TAG_NAME }}-arm64.dmg .
+          mv dist/LabelTool4Xray-${{ env.TAG_NAME }}-arm64-mac.zip .
+          mv dist/LabelTool4Xray-${{ env.TAG_NAME }}-arm64.dmg .
           
       - name: Upload Windows artifacts to release
         if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'windows-latest'
         uses: softprops/action-gh-release@v2.0.5
         with:
           files: |
-            Label-${{ env.TAG_NAME }}-windows.zip
-            Label Setup ${{ env.TAG_NAME }}.exe
+            LabelTool4Xray-${{ env.TAG_NAME }}-windows.zip
+            LabelTool4Xray Setup ${{ env.TAG_NAME }}.exe
 
       - name: Upload MacOS artifacts to release
         if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'macos-latest'
         uses: softprops/action-gh-release@v2.0.5
         with:
           files: |
-            Label-${{ env.TAG_NAME }}-arm64-mac.zip
-            Label-${{ env.TAG_NAME }}-arm64.dmg
+            LabelTool4Xray-${{ env.TAG_NAME }}-arm64-mac.zip
+            LabelTool4Xray-${{ env.TAG_NAME }}-arm64.dmg
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
