@@ -84,3 +84,5 @@ jobs:
           files: |
             Label-${{ env.TAG_NAME }}-arm64-mac.zip
             Label-${{ env.TAG_NAME }}-arm64.dmg
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
