@@ -66,7 +66,8 @@ const DrawImage = () => {
     const scale = imageWidth / imageHeight
     const currentInnerWidth =
       document.querySelector("#stage")?.clientWidth || BASE_WIDTH
-    const maxInnerHeight = window.innerHeight - 103
+    const maxInnerHeight =
+      window.innerHeight - (window.innerHeight > window.innerWidth ? 112 : 103)
 
     if (imageWidth > imageHeight) {
       const width = currentInnerWidth

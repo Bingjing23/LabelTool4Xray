@@ -82,12 +82,15 @@ export default function HomePage() {
               </Typography.Title>
               <GraphicDataProvider>
                 <TableDataProvider>
-                  <div className="flex flex-col md:flex-row md:space-x-4">
-                    <div className="md:w-3/4">
+                  <div className="flex portrait:flex-col flex-row landscape:space-x-4">
+                    <div className="portrait:w-full w-3/4">
                       <ActionBar />
+                      <div className="portrait:w-full portrait:my-4 landscape:hidden">
+                        <RightOverview />
+                      </div>
                       <DrawImage />
                     </div>
-                    <div className="md:w-1/4">
+                    <div className="landscape:w-1/4 portrait:hidden">
                       <RightOverview />
                     </div>
                   </div>

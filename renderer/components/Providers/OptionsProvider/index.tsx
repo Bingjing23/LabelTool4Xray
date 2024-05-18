@@ -21,32 +21,49 @@ export const defaultLabelOptions = [
   },
   {
     label: (
-      <Badge key="Pneumothorax" color={xtermColors[2]} text="Pneumothorax" />
+      <Badge
+        key="Pleural effusion"
+        color={xtermColors[2]}
+        text="Pleural effusion"
+      />
     ),
-    value: "Pneumothorax",
+    value: "Pleural effusion",
     color: xtermColors[2],
   },
   {
-    label: <Badge key="Emphysema" color={xtermColors[3]} text="Emphysema" />,
-    value: "Emphysema",
+    label: <Badge key="Pneumonia" color={xtermColors[3]} text="Pneumonia" />,
+    value: "Pneumonia",
     color: xtermColors[3],
   },
   {
-    label: <Badge key="Nodule" color={xtermColors[4]} text="Nodule" />,
-    value: "Nodule",
+    label: (
+      <Badge key="Pneumothorax" color={xtermColors[4]} text="Pneumothorax" />
+    ),
+    value: "Pneumothorax",
     color: xtermColors[4],
   },
   {
-    label: (
-      <Badge
-        key="Enlarged Cardiac Silhouette"
-        color={xtermColors[5]}
-        text="Enlarged Cardiac Silhouette"
-      />
-    ),
-    value: "Enlarged Cardiac Silhouette",
+    label: <Badge key="Edema" color={xtermColors[5]} text="Edema" />,
+    value: "Edema",
     color: xtermColors[5],
   },
+  {
+    label: <Badge key="Emphysema" color={xtermColors[6]} text="Emphysema" />,
+    value: "Emphysema",
+    color: xtermColors[6],
+  },
+  {
+    label: <Badge key="Nodule" color={xtermColors[7]} text="Nodule" />,
+    value: "Nodule",
+    color: xtermColors[7],
+  },
+  {
+    label: (
+      <Badge key="Cardiomegaly" color={xtermColors[8]} text="Cardiomegaly" />
+    ),
+    value: "Cardiomegaly",
+    color: xtermColors[8],
+  }
 ]
 
 export const severityOptions = [
@@ -142,8 +159,12 @@ export const anatomicalRegionsOptions = [
     value: "Right clavicle",
   },
   {
-    label: "Left clavicle trachea",
-    value: "Left clavicle trachea",
+    label: "Left clavicle",
+    value: "Left clavicle",
+  },
+  {
+    label: "Trachea",
+    value: "Trachea",
   },
   {
     label: "Spine",

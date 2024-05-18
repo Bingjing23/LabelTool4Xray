@@ -1,5 +1,12 @@
 import { useContext, useEffect, useMemo, useState } from "react"
-import { Badge, Button, Card, Modal, Space, Table } from "antd"
+import {
+  Badge,
+  Button,
+  Collapse,
+  CollapseProps,
+  Modal,
+  Table,
+} from "antd"
 import { ColumnType, ColumnsType } from "antd/es/table"
 import Image from "next/image"
 import LeftArrow from "../../public/svg/Left.svg"
@@ -237,255 +244,274 @@ const RightOverview: React.FC = () => {
     }
   }
 
-  return (
-    <>
-      <Space direction="vertical" style={{ width: "100%" }}>
-        <Card title="Labels" className="[&_.ant-card-body]:p-2">
-          <Table
-            className="[&_.ant-table-tbody>tr>td]:p-2 [&_.ant-table-thead>tr>th]:p-2 [&_.ant-table-measure-row]:collapse"
-            rowKey="rowId"
-            columns={[...labelColumns, operationColumn]}
-            dataSource={tableDataSource}
-            rowClassName="cursor-pointer"
-            onRow={(record: any) => {
-              return {
-                onClick: e => {
-                  console.log(e, record)
-                  if (record?.rect) {
-                    dispatchRects({
-                      type: "editRectById",
-                      id: record.rect.id,
+  const collapseItems: CollapseProps["items"] = [
+    {
+      key: "labels",
+      label: <span className="text-base font-semibold">Labels</span>,
+      children: (
+        <Table
+          className="[&_.ant-table-tbody>tr>td]:p-2 [&_.ant-table-thead>tr>th]:p-2 [&_.ant-table-measure-row]:collapse"
+          rowKey="rowId"
+          columns={[...labelColumns, operationColumn]}
+          dataSource={tableDataSource}
+          rowClassName="cursor-pointer"
+          onRow={(record: any) => {
+            return {
+              onClick: e => {
+                console.log(e, record)
+                if (record?.rect) {
+                  dispatchRects({
+                    type: "editRectById",
+                    id: record.rect.id,
+                    rect: {
+                      ...record.rect,
+                      isHighlighted: !record.rect.isHighlighted,
+                    },
+                  })
+                  dispatchTableData({
+                    type: "editTableDataSourceByRowId",
+                    rowId: record.rowId,
+                    editTableDataSourceByRowId: {
                       rect: {
                         ...record.rect,
                         isHighlighted: !record.rect.isHighlighted,
                       },
-                    })
-                    dispatchTableData({
-                      type: "editTableDataSourceByRowId",
-                      rowId: record.rowId,
-                      editTableDataSourceByRowId: {
-                        rect: {
-                          ...record.rect,
-                          isHighlighted: !record.rect.isHighlighted,
-                        },
-                      },
-                    })
-                  } else if (record?.polygon) {
-                    dispatchPolygons({
-                      type: "editPolygonById",
-                      id: record.polygon.id,
+                    },
+                  })
+                } else if (record?.polygon) {
+                  dispatchPolygons({
+                    type: "editPolygonById",
+                    id: record.polygon.id,
+                    polygon: {
+                      ...record.polygon,
+                      isHighlighted: !record.polygon.isHighlighted,
+                    },
+                  })
+                  dispatchTableData({
+                    type: "editTableDataSourceByRowId",
+                    rowId: record.rowId,
+                    editTableDataSourceByRowId: {
                       polygon: {
                         ...record.polygon,
                         isHighlighted: !record.polygon.isHighlighted,
                       },
-                    })
-                    dispatchTableData({
-                      type: "editTableDataSourceByRowId",
-                      rowId: record.rowId,
-                      editTableDataSourceByRowId: {
-                        polygon: {
-                          ...record.polygon,
-                          isHighlighted: !record.polygon.isHighlighted,
-                        },
-                      },
-                    })
-                  }
-                  dispatchBaseData({ type: "setHasChanged", hasChanged: true })
-                },
-              }
-            }}
-            scroll={{ x: true }}
-            pagination={{
-              simple: true,
-              pageSize: 5,
-            }}
-          />
-        </Card>
-        <Card
-          title={
-            <div className="flex justify-between items-center">
-              <span>Files</span>
-              <div className="flex gap-4">
-                <Button
-                  type="text"
-                  className="p-0 w-6 h-6 rounded-md font-bold text-white"
-                  style={{ backgroundColor: autoSave ? "#1677ff" : "#f0f0f0" }}
-                  onClick={() => {
-                    dispatchBaseData({
-                      type: "setAutoSave",
-                      autoSave: !autoSave,
-                    })
-                  }}
-                >
-                  S
-                </Button>
-                <Image
-                  priority
-                  src={LeftArrow}
-                  style={{ cursor: "pointer" }}
-                  onClick={async () => {
-                    await warnSave()
-                    await warnAutoSave()
-                    if (autoSave) {
-                      saveJson()
-                    }
-                    dispatchBaseData({ type: "setHasSaved", hasSaved: false })
-                    dispatchBaseData({
-                      type: "setHasChanged",
-                      hasChanged: false,
-                    })
-
-                    const currentIndex = filesData.findIndex(
-                      item => item.path === fileUrl
-                    )
-                    const previousIndex = Math.max(currentIndex - 1, 0)
-                    const previousFile = filesData[previousIndex]
-
-                    dispatchBaseData({
-                      type: "setFileUrl",
-                      fileUrl: previousFile.path,
-                    })
-                    dispatchBaseData({
-                      type: "setFileName",
-                      fileName: previousFile.fileName?.split(".")?.slice(0, -1),
-                    })
-                    dispatchBaseData({
-                      type: "setHasImage",
-                      hasImage: true,
-                    })
-
-                    window.ipc.send("read-json", {
-                      fileDirectory,
-                      fileName: previousFile.fileName,
-                      folderName: "images_data",
-                    })
-                    window.ipc.send("read-json", {
-                      fileDirectory,
-                      fileName:
-                        previousFile.fileName.split(".")[0] +
-                        "_windowSize" +
-                        "." +
-                        previousFile.fileName.split(".")[0],
-                      folderName: "labels_data",
-                    })
-                  }}
-                />
-                <Image
-                  priority
-                  src={RightArrow}
-                  style={{ cursor: "pointer" }}
-                  onClick={async () => {
-                    await warnSave()
-                    await warnAutoSave()
-                    if (autoSave) {
-                      saveJson()
-                    }
-                    dispatchBaseData({ type: "setHasSaved", hasSaved: false })
-                    dispatchBaseData({
-                      type: "setHasChanged",
-                      hasChanged: false,
-                    })
-                    const currentIndex = filesData.findIndex(
-                      item => item.path === fileUrl
-                    )
-                    const nextIndex = Math.min(
-                      currentIndex + 1,
-                      filesData.length - 1
-                    )
-                    const nextFile = filesData[nextIndex]
-
-                    dispatchBaseData({
-                      type: "setFileUrl",
-                      fileUrl: nextFile.path,
-                    })
-                    dispatchBaseData({
-                      type: "setFileName",
-                      fileName: nextFile.fileName?.split(".")?.slice(0, -1),
-                    })
-                    dispatchBaseData({
-                      type: "setHasImage",
-                      hasImage: true,
-                    })
-
-                    window.ipc.send("read-json", {
-                      fileDirectory,
-                      fileName: nextFile.fileName,
-                      folderName: "images_data",
-                    })
-                    window.ipc.send("read-json", {
-                      fileDirectory,
-                      fileName:
-                        nextFile.fileName.split(".")[0] +
-                        "_windowSize" +
-                        "." +
-                        nextFile.fileName.split(".")[0],
-                      folderName: "labels_data",
-                    })
-                  }}
-                />
-              </div>
-            </div>
-          }
-          className="[&_.ant-card-body]:p-2"
-        >
-          <Table
-            className="[&_.ant-table-tbody>tr>td]:p-2 [&_.ant-table-thead>tr>th]:p-2 [&_.ant-table-measure-row]:collapse"
-            rowKey="key"
-            columns={fileColumns}
-            dataSource={filesData}
-            showHeader={false}
-            scroll={{ x: true }}
-            rowClassName="cursor-pointer"
-            onRow={(record: any) => {
-              return {
-                onClick: async () => {
-                  await warnSave()
-                  await warnAutoSave()
-                  if (autoSave) {
-                    saveJson()
-                  }
-                  dispatchBaseData({ type: "setHasSaved", hasSaved: false })
-                  dispatchBaseData({ type: "setHasChanged", hasChanged: false })
-
-                  dispatchBaseData({
-                    type: "setFileUrl",
-                    fileUrl: record.path,
+                    },
                   })
-                  dispatchBaseData({
-                    type: "setFileName",
-                    fileName: record.fileName?.split(".")?.slice(0, -1),
-                  })
-                  dispatchBaseData({
-                    type: "setHasImage",
-                    hasImage: true,
-                  })
+                }
+                dispatchBaseData({ type: "setHasChanged", hasChanged: true })
+              },
+            }
+          }}
+          scroll={{ x: true }}
+          pagination={{
+            simple: true,
+            pageSize: 5,
+          }}
+        />
+      ),
+    },
+    {
+      key: "files",
+      label: (
+        <div className="flex justify-between items-center">
+          <span className="text-base font-semibold">Files</span>
+          <div className="flex gap-4">
+            <Button
+              type="text"
+              className="p-0 w-6 h-6 rounded-md font-bold text-white"
+              style={{ backgroundColor: autoSave ? "#1677ff" : "#f0f0f0" }}
+              onClick={() => {
+                dispatchBaseData({
+                  type: "setAutoSave",
+                  autoSave: !autoSave,
+                })
+              }}
+            >
+              S
+            </Button>
+            <Image
+              priority
+              src={LeftArrow}
+              style={{ cursor: "pointer" }}
+              onClick={async () => {
+                await warnSave()
+                await warnAutoSave()
+                if (autoSave) {
+                  saveJson()
+                }
+                dispatchBaseData({ type: "setHasSaved", hasSaved: false })
+                dispatchBaseData({
+                  type: "setHasChanged",
+                  hasChanged: false,
+                })
 
-                  window.ipc.send("read-json", {
-                    fileDirectory,
-                    fileName: record.fileName,
-                    folderName: "images_data",
-                  })
+                const currentIndex = filesData.findIndex(
+                  item => item.path === fileUrl
+                )
+                const previousIndex = Math.max(currentIndex - 1, 0)
+                const previousFile = filesData[previousIndex]
 
-                  window.ipc.send("read-json", {
-                    fileDirectory,
-                    fileName:
-                      record.fileName.split(".")[0] +
-                      "_windowSize" +
-                      "." +
-                      record.fileName.split(".")[0],
-                    folderName: "labels_data",
-                  })
-                },
-              }
-            }}
-            pagination={{
-              simple: true,
-              pageSize: 10,
-            }}
-          />
-        </Card>
-        {contextHolder}
-      </Space>
+                dispatchBaseData({
+                  type: "setFileUrl",
+                  fileUrl: previousFile.path,
+                })
+                dispatchBaseData({
+                  type: "setFileName",
+                  fileName: previousFile.fileName?.split(".")?.slice(0, -1),
+                })
+                dispatchBaseData({
+                  type: "setHasImage",
+                  hasImage: true,
+                })
+
+                window.ipc.send("read-json", {
+                  fileDirectory,
+                  fileName: previousFile.fileName,
+                  folderName: "images_data",
+                })
+                window.ipc.send("read-json", {
+                  fileDirectory,
+                  fileName:
+                    previousFile.fileName.split(".")[0] +
+                    "_windowSize" +
+                    "." +
+                    previousFile.fileName.split(".")[0],
+                  folderName: "labels_data",
+                })
+              }}
+            />
+            <Image
+              priority
+              src={RightArrow}
+              style={{ cursor: "pointer" }}
+              onClick={async () => {
+                await warnSave()
+                await warnAutoSave()
+                if (autoSave) {
+                  saveJson()
+                }
+                dispatchBaseData({ type: "setHasSaved", hasSaved: false })
+                dispatchBaseData({
+                  type: "setHasChanged",
+                  hasChanged: false,
+                })
+                const currentIndex = filesData.findIndex(
+                  item => item.path === fileUrl
+                )
+                const nextIndex = Math.min(
+                  currentIndex + 1,
+                  filesData.length - 1
+                )
+                const nextFile = filesData[nextIndex]
+
+                dispatchBaseData({
+                  type: "setFileUrl",
+                  fileUrl: nextFile.path,
+                })
+                dispatchBaseData({
+                  type: "setFileName",
+                  fileName: nextFile.fileName?.split(".")?.slice(0, -1),
+                })
+                dispatchBaseData({
+                  type: "setHasImage",
+                  hasImage: true,
+                })
+
+                window.ipc.send("read-json", {
+                  fileDirectory,
+                  fileName: nextFile.fileName,
+                  folderName: "images_data",
+                })
+                window.ipc.send("read-json", {
+                  fileDirectory,
+                  fileName:
+                    nextFile.fileName.split(".")[0] +
+                    "_windowSize" +
+                    "." +
+                    nextFile.fileName.split(".")[0],
+                  folderName: "labels_data",
+                })
+              }}
+            />
+          </div>
+        </div>
+      ),
+      children: (
+        <Table
+          className="[&_.ant-table-tbody>tr>td]:p-2 [&_.ant-table-thead>tr>th]:p-2 [&_.ant-table-measure-row]:collapse"
+          rowKey="key"
+          columns={fileColumns}
+          dataSource={filesData}
+          showHeader={false}
+          scroll={{ x: true }}
+          rowClassName="cursor-pointer"
+          onRow={(record: any) => {
+            return {
+              onClick: async () => {
+                await warnSave()
+                await warnAutoSave()
+                if (autoSave) {
+                  saveJson()
+                }
+                dispatchBaseData({ type: "setHasSaved", hasSaved: false })
+                dispatchBaseData({ type: "setHasChanged", hasChanged: false })
+
+                dispatchBaseData({
+                  type: "setFileUrl",
+                  fileUrl: record.path,
+                })
+                dispatchBaseData({
+                  type: "setFileName",
+                  fileName: record.fileName?.split(".")?.slice(0, -1),
+                })
+                dispatchBaseData({
+                  type: "setHasImage",
+                  hasImage: true,
+                })
+
+                window.ipc.send("read-json", {
+                  fileDirectory,
+                  fileName: record.fileName,
+                  folderName: "images_data",
+                })
+
+                window.ipc.send("read-json", {
+                  fileDirectory,
+                  fileName:
+                    record.fileName.split(".")[0] +
+                    "_windowSize" +
+                    "." +
+                    record.fileName.split(".")[0],
+                  folderName: "labels_data",
+                })
+              },
+            }
+          }}
+          pagination={{
+            simple: true,
+            pageSize: 10,
+          }}
+        />
+      ),
+    },
+  ]
+
+  return (
+    <>
+      <Collapse
+        items={[collapseItems[0]]}
+        ghost
+        // bordered={false}
+        defaultActiveKey={["labels"]}
+      />
+      <Collapse
+        className="mt-4"
+        items={[collapseItems[1]]}
+        ghost
+        // bordered={false}
+        defaultActiveKey={["files"]}
+      />
+      {contextHolder}
     </>
   )
 }
