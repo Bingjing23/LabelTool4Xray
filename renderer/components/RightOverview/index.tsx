@@ -1,12 +1,5 @@
 import { useContext, useEffect, useMemo, useState } from "react"
-import {
-  Badge,
-  Button,
-  Collapse,
-  CollapseProps,
-  Modal,
-  Table,
-} from "antd"
+import { Badge, Button, Collapse, CollapseProps, Modal, Table } from "antd"
 import { ColumnType, ColumnsType } from "antd/es/table"
 import Image from "next/image"
 import LeftArrow from "../../public/svg/Left.svg"
@@ -320,7 +313,8 @@ const RightOverview: React.FC = () => {
               type="text"
               className="p-0 w-6 h-6 rounded-md font-bold text-white"
               style={{ backgroundColor: autoSave ? "#1677ff" : "#f0f0f0" }}
-              onClick={() => {
+              onClick={e => {
+                e.stopPropagation()
                 dispatchBaseData({
                   type: "setAutoSave",
                   autoSave: !autoSave,
@@ -333,7 +327,8 @@ const RightOverview: React.FC = () => {
               priority
               src={LeftArrow}
               style={{ cursor: "pointer" }}
-              onClick={async () => {
+              onClick={async e => {
+                e.stopPropagation()
                 await warnSave()
                 await warnAutoSave()
                 if (autoSave) {
@@ -384,7 +379,8 @@ const RightOverview: React.FC = () => {
               priority
               src={RightArrow}
               style={{ cursor: "pointer" }}
-              onClick={async () => {
+              onClick={async e => {
+                e.stopPropagation()
                 await warnSave()
                 await warnAutoSave()
                 if (autoSave) {
