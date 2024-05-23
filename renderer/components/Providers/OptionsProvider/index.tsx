@@ -7,14 +7,22 @@ import { Badge } from "antd"
 export const defaultLabelOptions = [
   {
     label: (
-      <Badge key="alveolar consolidation" color={xtermColors[0]} text="肺泡实变（alveolar consolidation）" />
+      <Badge
+        key="alveolar consolidation"
+        color={xtermColors[0]}
+        text="肺泡实变（alveolar consolidation）"
+      />
     ),
     value: "alveolar consolidation",
     color: xtermColors[0],
   },
   {
     label: (
-      <Badge key="interstitial thickening" color={xtermColors[1]} text="肺间质增厚（interstitial thickening）" />
+      <Badge
+        key="interstitial thickening"
+        color={xtermColors[1]}
+        text="肺间质增厚（interstitial thickening）"
+      />
     ),
     value: "interstitial thickening",
     color: xtermColors[1],
@@ -31,7 +39,13 @@ export const defaultLabelOptions = [
     color: xtermColors[2],
   },
   {
-    label: <Badge key="pneumothorax" color={xtermColors[3]} text="气胸（pneumothorax）" />,
+    label: (
+      <Badge
+        key="pneumothorax"
+        color={xtermColors[3]}
+        text="气胸（pneumothorax）"
+      />
+    ),
     value: "pneumothorax",
     color: xtermColors[3],
   },
@@ -43,12 +57,24 @@ export const defaultLabelOptions = [
     color: xtermColors[4],
   },
   {
-    label: <Badge key="bronchitis" color={xtermColors[5]} text="支气管炎（bronchitis）" />,
+    label: (
+      <Badge
+        key="bronchitis"
+        color={xtermColors[5]}
+        text="支气管炎（bronchitis）"
+      />
+    ),
     value: "bronchitis",
     color: xtermColors[5],
   },
   {
-    label: <Badge key="pulmonary edema" color={xtermColors[6]} text="肺水肿（pulmonary edema）" />,
+    label: (
+      <Badge
+        key="pulmonary edema"
+        color={xtermColors[6]}
+        text="肺水肿（pulmonary edema）"
+      />
+    ),
     value: "pulmonary edema",
     color: xtermColors[6],
   },
@@ -89,122 +115,96 @@ export const severityOptions = [
 // right clavicle, left clavicle trachea, spine,
 // aortic arch, mediastinum, upper mediastinum, superior vena cava,
 // cardiac silhouette, cavoatrial junction, right atrium, carina, abdomen
+// a右肺上野内带 (right upper medial lung zone)
+// b右肺上野中带 (right upper central lung zone)
+// c右肺上野外带 (right upper lateral lung zone)
+// d右肺中野内带 (right middle medial lung zone)
+// e右肺中野中带 (right middle central lung zone)
+// f右肺中野外带 (right middle lateral lung zone)
+// g右肺下野内带 (right lower medial lung zone)
+// h右肺下野中带 (right lower central lung zone)
+// i右肺下野外带 (right lower lateral lung zone)
+// A左肺上野内带 (left upper medial lung zone)
+// B左肺上野中带 (left upper central lung zone)
+// C左肺上野外带 (left upper lateral lung zone)
+// D左肺中野内带 (left middle medial lung zone)
+// E左肺中野中带 (left middle central lung zone)
+// F左肺中野外带 (left middle lateral lung zone)
+// G左肺下野内带 (left lower medial lung zone)
+// H左肺下野中带 (left lower central lung zone)
+// I左肺下野外带 (left lower lateral lung zone)
 export const anatomicalRegionsOptions = [
   {
-    label: "Right lung",
-    value: "Right lung",
+    label: "a右肺上野内带 (right upper medial lung zone)",
+    value: "right upper medial lung zone",
   },
   {
-    label: "Right upper lung zone",
-    value: "Right upper lung zone",
+    label: "b右肺上野中带 (right upper central lung zone)",
+    value: "right upper central lung zone",
   },
   {
-    label: "Right mid lung zone",
-    value: "Right mid lung zone",
+    label: "c右肺上野外带 (right upper lateral lung zone)",
+    value: "right upper lateral lung zone",
   },
   {
-    label: "Right lower lung zone",
-    value: "Right lower lung zone",
+    label: "d右肺中野内带 (right middle medial lung zone)",
+    value: "right middle medial lung zone",
   },
   {
-    label: "Right apical zone",
-    value: "Right apical zone",
+    label: "e右肺中野中带 (right middle central lung zone)",
+    value: "right middle central lung zone",
   },
   {
-    label: "Left lung",
-    value: "Left lung",
+    label: "f右肺中野外带 (right middle lateral lung zone)",
+    value: "right middle lateral lung zone",
   },
   {
-    label: "Left upper lung zone",
-    value: "Left upper lung zone",
+    label: "g右肺下野内带 (right lower medial lung zone)",
+    value: "right lower medial lung zone",
   },
   {
-    label: "Left mid lung zone",
-    value: "Left mid lung zone",
+    label: "h右肺下野中带 (right lower central lung zone)",
+    value: "right lower central lung zone",
   },
   {
-    label: "Left lower lung zone",
-    value: "Left lower lung zone",
+    label: "i右肺下野外带 (right lower lateral lung zone)",
+    value: "right lower lateral lung zone",
   },
   {
-    label: "Left apical zone",
-    value: "Left apical zone",
+    label: "A左肺上野内带 (left upper medial lung zone)",
+    value: "left upper medial lung zone",
   },
   {
-    label: "Right hilar structures",
-    value: "Right hilar structures",
+    label: "B左肺上野中带 (left upper central lung zone)",
+    value: "left upper central lung zone",
   },
   {
-    label: "Right costophrenic angle",
-    value: "Right costophrenic angle",
+    label: "C左肺上野外带 (left upper lateral lung zone)",
+    value: "left upper lateral lung zone",
   },
   {
-    label: "Right hemidiaphragm",
-    value: "Right hemidiaphragm",
+    label: "D左肺中野内带 (left middle medial lung zone)",
+    value: "left middle medial lung zone",
   },
   {
-    label: "Left hilar structures",
-    value: "Left hilar structures",
+    label: "E左肺中野中带 (left middle central lung zone)",
+    value: "left middle central lung zone",
   },
   {
-    label: "Left costophrenic angle",
-    value: "Left costophrenic angle",
+    label: "F左肺中野外带 (left middle lateral lung zone)",
+    value: "left middle lateral lung zone",
   },
   {
-    label: "Left hemidiaphragm",
-    value: "Left hemidiaphragm",
+    label: "G左肺下野内带 (left lower medial lung zone)",
+    value: "left lower medial lung zone",
   },
   {
-    label: "Right clavicle",
-    value: "Right clavicle",
+    label: "H左肺下野中带 (left lower central lung zone)",
+    value: "left lower central lung zone",
   },
   {
-    label: "Left clavicle",
-    value: "Left clavicle",
-  },
-  {
-    label: "Trachea",
-    value: "Trachea",
-  },
-  {
-    label: "Spine",
-    value: "Spine",
-  },
-  {
-    label: "Aortic arch",
-    value: "Aortic arch",
-  },
-  {
-    label: "Mediastinum",
-    value: "Mediastinum",
-  },
-  {
-    label: "Upper mediastinum",
-    value: "Upper mediastinum",
-  },
-  {
-    label: "Superior vena cava",
-    value: "Superior vena cava",
-  },
-  {
-    label: "Cardiac silhouette",
-    value: "Cardiac silhouette",
-  },
-  {
-    label: "Cavoatrial junction",
-    value: "Cavoatrial junction",
-  },
-  {
-    label: "Right atrium",
-    value: "Right atrium",
-  },
-  {
-    label: "Carina",
-    value: "Carina",
-  },
-  {
-    label: "Abdomen",
-    value: "Abdomen",
+    label: "I左肺下野外带 (left lower lateral lung zone)",
+    value: "left lower lateral lung zone",
   },
 ]
 
