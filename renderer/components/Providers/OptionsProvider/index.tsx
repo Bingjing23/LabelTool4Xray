@@ -7,63 +7,63 @@ import { Badge } from "antd"
 export const defaultLabelOptions = [
   {
     label: (
-      <Badge key="Atelectasis" color={xtermColors[0]} text="Atelectasis" />
+      <Badge key="alveolar consolidation" color={xtermColors[0]} text="肺泡实变（alveolar consolidation）" />
     ),
-    value: "Atelectasis",
+    value: "alveolar consolidation",
     color: xtermColors[0],
   },
   {
     label: (
-      <Badge key="Consolidation" color={xtermColors[1]} text="Consolidation" />
+      <Badge key="interstitial thickening" color={xtermColors[1]} text="肺间质增厚（interstitial thickening）" />
     ),
-    value: "Consolidation",
+    value: "interstitial thickening",
     color: xtermColors[1],
   },
   {
     label: (
       <Badge
-        key="Pleural effusion"
+        key="pleural effusion"
         color={xtermColors[2]}
-        text="Pleural effusion"
+        text="胸腔积液（pleural effusion）"
       />
     ),
-    value: "Pleural effusion",
+    value: "pleural effusion",
     color: xtermColors[2],
   },
   {
-    label: <Badge key="Pneumonia" color={xtermColors[3]} text="Pneumonia" />,
-    value: "Pneumonia",
+    label: <Badge key="pneumothorax" color={xtermColors[3]} text="气胸（pneumothorax）" />,
+    value: "pneumothorax",
     color: xtermColors[3],
   },
   {
     label: (
-      <Badge key="Pneumothorax" color={xtermColors[4]} text="Pneumothorax" />
+      <Badge key="pneumonia" color={xtermColors[4]} text="肺炎（pneumonia）" />
     ),
-    value: "Pneumothorax",
+    value: "pneumonia",
     color: xtermColors[4],
   },
   {
-    label: <Badge key="Edema" color={xtermColors[5]} text="Edema" />,
-    value: "Edema",
+    label: <Badge key="bronchitis" color={xtermColors[5]} text="支气管炎（bronchitis）" />,
+    value: "bronchitis",
     color: xtermColors[5],
   },
   {
-    label: <Badge key="Emphysema" color={xtermColors[6]} text="Emphysema" />,
-    value: "Emphysema",
+    label: <Badge key="pulmonary edema" color={xtermColors[6]} text="肺水肿（pulmonary edema）" />,
+    value: "pulmonary edema",
     color: xtermColors[6],
   },
-  {
-    label: <Badge key="Nodule" color={xtermColors[7]} text="Nodule" />,
-    value: "Nodule",
-    color: xtermColors[7],
-  },
-  {
-    label: (
-      <Badge key="Cardiomegaly" color={xtermColors[8]} text="Cardiomegaly" />
-    ),
-    value: "Cardiomegaly",
-    color: xtermColors[8],
-  }
+  // {
+  //   label: <Badge key="Nodule" color={xtermColors[7]} text="Nodule" />,
+  //   value: "Nodule",
+  //   color: xtermColors[7],
+  // },
+  // {
+  //   label: (
+  //     <Badge key="Cardiomegaly" color={xtermColors[8]} text="Cardiomegaly" />
+  //   ),
+  //   value: "Cardiomegaly",
+  //   color: xtermColors[8],
+  // }
 ]
 
 export const severityOptions = [
